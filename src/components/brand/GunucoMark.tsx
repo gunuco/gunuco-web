@@ -1,0 +1,60 @@
+import { Box, Stack, Typography } from '@mui/material';
+import logo from '@/assets/logo.png';
+import { brand } from '@/theme/colors';
+
+interface GunucoMarkProps {
+  size?: number;
+  withWordmark?: boolean;
+  inverted?: boolean;
+}
+
+/** Wordmark + giraffe mark. */
+export function GunucoMark({ size = 40, withWordmark = false, inverted = false }: GunucoMarkProps) {
+  return (
+    <Stack direction="row" alignItems="center" gap={1.25} sx={{ minWidth: 0 }}>
+      <Box
+        component="img"
+        src={logo}
+        alt="GUNUCO"
+        sx={{
+          width: size,
+          height: size,
+          flexShrink: 0,
+          borderRadius: '50%',
+          objectFit: 'cover',
+          display: 'block',
+          boxShadow: inverted
+            ? `0 0 0 2px ${brand.gold}61, 0 8px 18px ${brand.wineDark}47`
+            : `0 8px 18px ${brand.wine}38`,
+        }}
+      />
+      {withWordmark ? (
+        <Box sx={{ minWidth: 0 }}>
+          <Typography
+            sx={{
+              fontFamily: '"Fraunces", serif',
+              fontWeight: 650,
+              letterSpacing: '-0.04em',
+              fontSize: size > 36 ? 22 : 18,
+              lineHeight: 1,
+              color: inverted ? brand.cream : brand.wine,
+            }}
+          >
+            GUNUCO
+          </Typography>
+          <Typography
+            sx={{
+              mt: 0.35,
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: '0.16em',
+              color: inverted ? 'rgba(247,241,234,0.55)' : brand.goldDark,
+            }}
+          >
+            ATELIER
+          </Typography>
+        </Box>
+      ) : null}
+    </Stack>
+  );
+}

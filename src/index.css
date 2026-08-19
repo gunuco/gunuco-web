@@ -1,0 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+  color-scheme: light;
+  --gunuco-maroon: #5d001e;
+  --gunuco-gold: #c4a574;
+  --gunuco-cream: #f3f0ec;
+  --gunuco-ink: #4a3036;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  background: var(--gunuco-cream);
+}
+
+::selection {
+  background: rgba(93, 0, 30, 0.16);
+  color: var(--gunuco-ink);
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #fff inset;
+  -webkit-text-fill-color: #4a3036;
+}
+
+@keyframes accept-ring {
+  0%,
+  55%,
+  100% {
+    transform: rotate(0deg);
+    box-shadow: 0 0 0 0 rgba(93, 0, 30, 0.42);
+  }
+  7% {
+    transform: rotate(14deg);
+  }
+  14% {
+    transform: rotate(-12deg);
+  }
+  21% {
+    transform: rotate(10deg);
+  }
+  28% {
+    transform: rotate(-7deg);
+  }
+  35% {
+    transform: rotate(4deg);
+  }
+  42% {
+    transform: rotate(0deg);
+    box-shadow: 0 0 0 8px rgba(93, 0, 30, 0);
+  }
+}
+
+.accept-ring {
+  transform-origin: top center;
+  animation: accept-ring 1.7s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .accept-ring {
+    animation: none;
+  }
+}
