@@ -2,7 +2,6 @@ import { createTheme } from '@mui/material/styles';
 import { brand, semantic } from '@/theme/colors';
 
 const sans = '"Plus Jakarta Sans", "Segoe UI", sans-serif';
-const display = '"Fraunces", "Times New Roman", serif';
 
 export const theme = createTheme({
   palette: {
@@ -35,12 +34,12 @@ export const theme = createTheme({
   },
   typography: {
     fontFamily: sans,
-    h1: { fontFamily: display, fontWeight: 600, letterSpacing: '-0.03em' },
-    h2: { fontFamily: display, fontWeight: 600, letterSpacing: '-0.03em' },
-    h3: { fontFamily: display, fontWeight: 600, letterSpacing: '-0.02em' },
-    h4: { fontFamily: display, fontWeight: 600, letterSpacing: '-0.02em' },
-    h5: { fontFamily: display, fontWeight: 600, letterSpacing: '-0.02em' },
-    h6: { fontFamily: display, fontWeight: 600, letterSpacing: '-0.02em' },
+    h1: { fontWeight: 700, letterSpacing: '-0.03em' },
+    h2: { fontWeight: 700, letterSpacing: '-0.03em' },
+    h3: { fontWeight: 700, letterSpacing: '-0.02em' },
+    h4: { fontWeight: 700, letterSpacing: '-0.02em' },
+    h5: { fontWeight: 700, letterSpacing: '-0.02em' },
+    h6: { fontWeight: 700, letterSpacing: '-0.02em' },
     subtitle1: { fontWeight: 650 },
     subtitle2: { fontWeight: 650, letterSpacing: '0.04em', textTransform: 'uppercase', fontSize: 11 },
     button: { textTransform: 'none', fontWeight: 650 },

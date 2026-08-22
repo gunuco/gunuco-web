@@ -10,6 +10,8 @@ export const seedRiders: DeliveryPartner[] = [
     activeOrders: 0,
     rating: 4.8,
     locationLabel: 'Road No. 12, 6 min away',
+    lat: 16.5184,
+    lng: 80.6302,
   },
   {
     id: 'rid_02',
@@ -20,6 +22,8 @@ export const seedRiders: DeliveryPartner[] = [
     activeOrders: 1,
     rating: 4.9,
     locationLabel: 'Jubilee Hills, on a drop',
+    lat: 16.5098,
+    lng: 80.6411,
   },
   {
     id: 'rid_03',
@@ -30,6 +34,8 @@ export const seedRiders: DeliveryPartner[] = [
     activeOrders: 0,
     rating: 4.6,
     locationLabel: 'Atelier bay',
+    lat: 16.5062,
+    lng: 80.648,
   },
   {
     id: 'rid_04',
@@ -40,6 +46,8 @@ export const seedRiders: DeliveryPartner[] = [
     activeOrders: 0,
     rating: 4.7,
     locationLabel: 'Off shift',
+    lat: 16.5209,
+    lng: 80.6624,
   },
   {
     id: 'rid_05',
@@ -50,6 +58,8 @@ export const seedRiders: DeliveryPartner[] = [
     activeOrders: 2,
     rating: 4.5,
     locationLabel: 'Banjara Hills, 2 drops',
+    lat: 16.4991,
+    lng: 80.6538,
   },
   {
     id: 'rid_06',
@@ -60,5 +70,7 @@ export const seedRiders: DeliveryPartner[] = [
     activeOrders: 0,
     rating: 4.9,
     locationLabel: 'Film Nagar, 11 min away',
+    lat: 16.5276,
+    lng: 80.6215,
   },
 ];

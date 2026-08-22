@@ -8,6 +8,7 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { StatusChip } from '@/components/ui/StatusChip';
 import { PAYMENT_STATUS_LABELS } from '@/constants/status';
 import { HighlightName } from '@/components/orders/HighlightName';
+import { CustomerCell, CustomizationsCell } from '@/components/orders/CustomerCell';
 import { OrderIdCell } from '@/components/orders/OrderIdCell';
 import { TotalCell } from '@/components/orders/TotalCell';
 import { useCategories } from '@/hooks/useCategories';
@@ -16,6 +17,8 @@ import { useOrderMutations, useOrders } from '@/hooks/useOrders';
 import { useAuthStore } from '@/store/authStore';
 import type { Order, OrderFilters, PaymentStatus } from '@/types';
 import { getCategoryById, getChildCategories, getParentCategories } from '@/utils/category';
+import { isPendingForId } from '@/utils/mutation';
+import { formatOrderCustomizations } from '@/utils/orderCustomizations';
 import { sortOrdersLatestFirst } from '@/utils/orderNumber';
 import { canMutateOrders } from '@/utils/permissions';
 
@@ -37,7 +40,6 @@ export function OrdersPage() {
   const parents = getParentCategories(categories).filter((c) => c.active);
   const children = filters.categoryId ? getChildCategories(categories, filters.categoryId) : [];
   const canEdit = role ? canMutateOrders(role) : false;
-  const busy = accept.isPending || reject.isPending;
 
   const columns: Column<Order>[] = useMemo(
     () => [
@@ -49,7 +51,15 @@ export function OrdersPage() {
       {
         id: 'customer',
         label: 'Customer',
+        align: 'left',
         render: (row) => <HighlightName value={row.customerName} tone="wine" />,
+      },
+      {
+        id: 'details',
+        label: 'Details',
+        render: (row) => (
+          <CustomerCell phone={row.customerPhone} address={row.customerAddress} />
+        ),
       },
       {
         id: 'cat',
@@ -63,9 +73,13 @@ export function OrdersPage() {
         },
       },
       {
+        id: 'custom',
+        label: 'Customizations',
+        render: (row) => <CustomizationsCell value={formatOrderCustomizations(row, categories)} />,
+      },
+      {
         id: 'total',
         label: 'Total',
-        minWidth: 120,
         render: (row) => <TotalCell amount={row.total} paid={row.paymentStatus === 'completed'} />,
       },
       {
@@ -84,13 +98,17 @@ export function OrdersPage() {
       {
         id: 'actions',
         label: '',
-        render: (row) => (
-          <Stack direction="row" gap={0.4} justifyContent="center" flexWrap="nowrap" onClick={(e) => e.stopPropagation()}>
+        align: 'right',
+        minWidth: 110 ,
+        render: (row) => {
+          const rowBusy = isPendingForId(accept, row.id) || isPendingForId(reject, row.id);
+          return (
+          <Stack direction="row" gap={0.4} justifyContent="flex-end" flexWrap="nowrap" onClick={(e) => e.stopPropagation()}>
             <Button
               size="small"
-              variant={canEdit && !busy ? 'contained' : 'text'}
-              className={canEdit && !busy ? 'accept-ring' : undefined}
-              disabled={!canEdit || busy}
+              variant={canEdit && !rowBusy ? 'contained' : 'text'}
+              className={canEdit && !rowBusy ? 'accept-ring' : undefined}
+              disabled={!canEdit || rowBusy}
               onClick={() => accept.mutate(row.id)}
               sx={{ minHeight: 28, px: 1.2, fontSize: 12 }}
             >
@@ -99,7 +117,7 @@ export function OrdersPage() {
             <Button
               size="small"
               color="error"
-              disabled={!canEdit || busy}
+              disabled={!canEdit || rowBusy}
               onClick={async () => {
                 const ok = await confirmApi.confirm(
                   'Reject this order?',
@@ -112,10 +130,21 @@ export function OrdersPage() {
               Reject
             </Button>
           </Stack>
-        ),
+          );
+        },
       },
     ],
-    [accept, busy, canEdit, categories, confirmApi, reject],
+    [
+      accept,
+      accept.isPending,
+      accept.variables,
+      canEdit,
+      categories,
+      confirmApi,
+      reject,
+      reject.isPending,
+      reject.variables,
+    ],
   );
 
   const showTable = list.isLoading || rows.length > 0;
@@ -218,6 +247,7 @@ export function OrdersPage() {
         ) : (
           <DataTable
             connected
+            headerFit
             columns={columns}
             rows={rows}
             rowKey={(r) => r.id}

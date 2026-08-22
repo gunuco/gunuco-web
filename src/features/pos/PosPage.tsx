@@ -211,7 +211,7 @@ export function PosPage() {
               <Box
                 sx={{
                   height: 88,
-                  background: `linear-gradient(145deg, hsl(${p.imageHue} 42% 38%), hsl(${p.imageHue} 28% 16%))`,
+                  bgcolor: `hsl(${p.imageHue} 38% 28%)`,
                 }}
               />
               <Box sx={{ p: 1.25 }}>

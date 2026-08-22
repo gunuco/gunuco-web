@@ -18,6 +18,7 @@ import FormatQuoteRoundedIcon from '@mui/icons-material/FormatQuoteRounded';
 import CancelRoundedIcon from '@mui/icons-material/CancelRounded';
 import CurrencyRupeeRoundedIcon from '@mui/icons-material/CurrencyRupeeRounded';
 import AssignmentReturnRoundedIcon from '@mui/icons-material/AssignmentReturnRounded';
+import PersonOutlineRoundedIcon from '@mui/icons-material/PersonOutlineRounded';
 import ManageAccountsRoundedIcon from '@mui/icons-material/ManageAccountsRounded';
 import type { SvgIconComponent } from '@mui/icons-material';
 
@@ -28,6 +29,7 @@ export const NAV_ICONS: Record<string, SvgIconComponent> = {
   cycle: TimelineRoundedIcon,
   wedding: FavoriteBorderRoundedIcon,
   support: SupportAgentRoundedIcon,
+  customers: PersonOutlineRoundedIcon,
   locations: PlaceRoundedIcon,
   catalog: CakeRoundedIcon,
   custom: AutoAwesomeRoundedIcon,

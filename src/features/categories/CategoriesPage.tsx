@@ -23,6 +23,7 @@ import { useCategories, useCreateCategory, useUpdateCategory } from '@/hooks/use
 import { useConfirm } from '@/hooks/useConfirm';
 import type { Category } from '@/types';
 import { buildCategoryTree } from '@/utils/category';
+import { isPendingForId } from '@/utils/mutation';
 import { canManageCatalog } from '@/utils/permissions';
 import { useAuthStore } from '@/store/authStore';
 
@@ -45,7 +46,15 @@ export function CategoriesPage({ embedded = false }: { embedded?: boolean }) {
 
   return (
     <Stack gap={2.5}>
-      {embedded ? null : (
+      {embedded ? (
+        <Stack direction="row" justifyContent="flex-end">
+          {canEdit ? (
+            <Button variant="contained" startIcon={<AddRoundedIcon />} onClick={() => setCreating(true)}>
+              Add category
+            </Button>
+          ) : null}
+        </Stack>
+      ) : (
         <PageHeader
           title="Categories & subcategories"
           eyebrow="Taxonomy"
@@ -94,7 +103,7 @@ export function CategoriesPage({ embedded = false }: { embedded?: boolean }) {
               ) : null}
               <Switch
                 checked={parent.active}
-                disabled={!canEdit || update.isPending}
+                disabled={!canEdit || isPendingForId(update, parent.id)}
                 onChange={async (_, checked) => {
                   if (!checked) {
                     const ok = await confirmApi.confirm(
@@ -139,7 +148,7 @@ export function CategoriesPage({ embedded = false }: { embedded?: boolean }) {
                     <Switch
                       size="small"
                       checked={child.active}
-                      disabled={!canEdit}
+                      disabled={!canEdit || isPendingForId(update, child.id)}
                       onChange={(_, checked) => update.mutate({ id: child.id, payload: { active: checked } })}
                     />
                   </Stack>
@@ -217,7 +226,7 @@ export function CategoriesPage({ embedded = false }: { embedded?: boolean }) {
           />
           <Button
             variant="contained"
-            disabled={!name || update.isPending}
+            disabled={!name || isPendingForId(update, editing?.id)}
             onClick={() => {
               if (!editing) return;
               update.mutate(

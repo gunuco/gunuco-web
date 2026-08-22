@@ -13,15 +13,26 @@ import { formatCurrency } from '@/utils/format';
 import { canManageCatalog } from '@/utils/permissions';
 import { useAuthStore } from '@/store/authStore';
 
-export function CatalogPage({ embedded = false }: { embedded?: boolean }) {
+export function CatalogPage({
+  embedded = false,
+  categoryId: categoryIdProp,
+}: {
+  embedded?: boolean;
+  categoryId?: string;
+}) {
   const role = useAuthStore((s) => s.user?.role);
   const canEdit = role ? canManageCatalog(role) : false;
   const { data: categories = [] } = useCategories();
   const [categoryId, setCategoryId] = useState('');
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<Product | null | 'new'>(null);
+  const treeFilter = embedded && categoryIdProp !== undefined;
+  const activeCategoryId = treeFilter ? categoryIdProp : categoryId;
 
-  const products = useProducts({ categoryId: categoryId || undefined, search: search || undefined });
+  const products = useProducts({
+    categoryId: activeCategoryId || undefined,
+    search: search || undefined,
+  });
   const save = useSaveProduct();
 
   const columns: Column<Product>[] = useMemo(
@@ -95,26 +106,28 @@ export function CatalogPage({ embedded = false }: { embedded?: boolean }) {
       />
       )}
       <Stack direction={{ xs: 'column', sm: 'row' }} gap={1.5}>
-        <TextField
-          select
-          label="Category"
-          value={categoryId}
-          onChange={(e) => setCategoryId(e.target.value)}
-          sx={{ minWidth: 220 }}
-        >
-          <MenuItem value="">All live categories</MenuItem>
-          {getParentCategories(categories)
-            .filter((c) => c.active)
-            .flatMap((parent) =>
-              categories
-                .filter((c) => c.parentId === parent.id)
-                .map((c) => (
-                  <MenuItem key={c.id} value={c.id}>
-                    {parent.name} / {c.name}
-                  </MenuItem>
-                )),
-            )}
-        </TextField>
+        {treeFilter ? null : (
+          <TextField
+            select
+            label="Category"
+            value={categoryId}
+            onChange={(e) => setCategoryId(e.target.value)}
+            sx={{ minWidth: 220 }}
+          >
+            <MenuItem value="">All live categories</MenuItem>
+            {getParentCategories(categories)
+              .filter((c) => c.active)
+              .flatMap((parent) =>
+                categories
+                  .filter((c) => c.parentId === parent.id)
+                  .map((c) => (
+                    <MenuItem key={c.id} value={c.id}>
+                      {parent.name} / {c.name}
+                    </MenuItem>
+                  )),
+              )}
+          </TextField>
+        )}
         <TextField label="Search" value={search} onChange={(e) => setSearch(e.target.value)} />
       </Stack>
       <DataTable

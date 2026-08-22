@@ -6,6 +6,7 @@ import { CUSTOM_CAKE_STATUS_LABELS } from '@/constants/status';
 import { useCustomCakes, useUpdateCustomCake } from '@/hooks/useResources';
 import type { CustomCakeRequest } from '@/types';
 import { formatCurrency, formatDate } from '@/utils/format';
+import { isPendingForId } from '@/utils/mutation';
 
 export function CustomCakesPage() {
   const list = useCustomCakes();
@@ -35,7 +36,7 @@ export function CustomCakesPage() {
           select
           size="small"
           value={r.status}
-          disabled={update.isPending}
+          disabled={isPendingForId(update, r.id)}
           onChange={(e) =>
             update.mutate({ id: r.id, payload: { status: e.target.value as CustomCakeRequest['status'] } })
           }

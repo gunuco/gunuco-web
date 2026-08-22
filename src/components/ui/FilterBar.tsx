@@ -16,16 +16,18 @@ export const filterFieldProps = {
 
 export function FilterBar({
   connected,
+  singleRow,
   children,
 }: {
   connected?: boolean;
+  singleRow?: boolean;
   children: ReactNode;
 }) {
   return (
     <Stack
-      direction={{ xs: 'column', md: 'row' }}
+      direction={singleRow ? 'row' : { xs: 'column', md: 'row' }}
       gap={1.5}
-      flexWrap="wrap"
+      flexWrap={singleRow ? 'nowrap' : 'wrap'}
       alignItems="center"
       sx={{
         p: 1.5,
@@ -34,6 +36,7 @@ export function FilterBar({
         bgcolor: tableSurfaces.search,
         border: `1px solid ${brand.line}`,
         borderBottom: connected ? 'none' : undefined,
+        overflowX: singleRow ? 'auto' : undefined,
         '& .MuiInputLabel-root': {
           color: brand.muted,
           fontWeight: 700,

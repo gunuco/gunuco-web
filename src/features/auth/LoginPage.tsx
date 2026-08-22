@@ -17,6 +17,7 @@ import { seedUsers, DEMO_PASSWORD } from '@/mocks/data/users';
 import { authService } from '@/services/index';
 import { useAuthStore } from '@/store/authStore';
 import type { AuthUser } from '@/types';
+import { homePathForRole } from '@/utils/permissions';
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -33,7 +34,7 @@ export function LoginPage() {
     try {
       const user = (await authService.login(email, password)) as AuthUser;
       setSession(user);
-      navigate('/dashboard', { replace: true });
+      navigate(homePathForRole(user.role), { replace: true });
     } catch {
       setError('Invalid credentials. Use a demo account below.');
     } finally {
@@ -55,7 +56,7 @@ export function LoginPage() {
           flexDirection: 'column',
           justifyContent: 'space-between',
           p: 7,
-          background: `radial-gradient(900px 420px at 18% 12%, ${brand.gold}3D, transparent 52%), linear-gradient(165deg, ${brand.wineDark} 0%, ${brand.wine} 55%, ${brand.wineMid} 100%)`,
+          bgcolor: brand.wine,
           color: brand.cream,
         }}
       >
@@ -64,20 +65,12 @@ export function LoginPage() {
           <Typography variant="subtitle2" sx={{ color: brand.gold, mb: 2 }}>
             Admin console
           </Typography>
-          <Typography
-            sx={{
-              fontFamily: '"Fraunces", serif',
-              fontSize: 50,
-              lineHeight: 1.06,
-              maxWidth: 520,
-              mb: 2.5,
-            }}
-          >
+          <Typography sx={{ fontSize: 42, fontWeight: 700, lineHeight: 1.12, maxWidth: 520, mb: 2.5 }}>
             One board for orders, menu and fulfilment.
           </Typography>
           <Typography sx={{ opacity: 0.7, maxWidth: 440, fontSize: 16 }}>
-            Owner, Admin and Branch Manager share this panel. Navigation follows role and
-            location — Cakes is live, other categories appear when you activate them.
+            Owner, Admin, Branch Manager and Customer Support share this panel. Navigation
+            follows role — support lands in the inbox, not the operations dashboard.
           </Typography>
         </Box>
         <Typography variant="caption" sx={{ opacity: 0.45, letterSpacing: '0.12em' }}>

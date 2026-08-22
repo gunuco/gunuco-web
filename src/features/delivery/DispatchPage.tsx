@@ -1,19 +1,24 @@
-import LocalShippingRoundedIcon from '@mui/icons-material/LocalShippingRounded';
-import TwoWheelerRoundedIcon from '@mui/icons-material/TwoWheelerRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
-import { Box, Button, Card, CardContent, Grid, Stack, Typography } from '@mui/material';
+import LocalShippingRoundedIcon from '@mui/icons-material/LocalShippingRounded';
+import MapRoundedIcon from '@mui/icons-material/MapRounded';
+import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
+import TwoWheelerRoundedIcon from '@mui/icons-material/TwoWheelerRounded';
+import { Box, Button, Card, CardContent, Grid, IconButton, Stack, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { DataTable, type Column } from '@/components/ui/DataTable';
 import { ErrorState } from '@/components/ui/Feedback';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { StatusChip } from '@/components/ui/StatusChip';
 import { OrderIdCell } from '@/components/orders/OrderIdCell';
 import { DELIVERY_STATE_LABELS, ORDER_STATUS_LABELS, RIDER_STATUS_LABELS } from '@/constants/status';
+import { RiderDetailsDialog } from '@/features/delivery/RiderDetailsDialog';
+import { RiderGpsDialog } from '@/features/delivery/RiderGpsDialog';
+import { useDashboard, useUpdateDashboardControls } from '@/hooks/useDashboard';
 import { useDeliveryPartners } from '@/hooks/useDeliveryPartners';
 import { useOrderMutations, useOrders } from '@/hooks/useOrders';
 import { useAuthStore } from '@/store/authStore';
-import type { DeliveryPartner, Order } from '@/types';
+import type { DeliveryPartner, FulfillmentMode, Order } from '@/types';
 import { formatCurrency, formatDateTime, fromNow } from '@/utils/format';
 import { sortOrdersLatestFirst } from '@/utils/orderNumber';
 import { brand } from '@/theme/colors';
@@ -40,13 +45,26 @@ function initials(name: string) {
     .toUpperCase();
 }
 
+function pickRider(riders: DeliveryPartner[]) {
+  return [...riders].sort((a, b) => a.activeOrders - b.activeOrders || b.rating - a.rating)[0];
+}
+
 export function DispatchPage() {
   const role = useAuthStore((s) => s.user?.role);
   const canAssign = role ? canAssignDelivery(role) : false;
+  const dashboard = useDashboard();
+  const updateControls = useUpdateDashboardControls();
   const list = useOrders({ page: 1, pageSize: 100 });
   const riders = useDeliveryPartners();
   const { assignRider } = useOrderMutations();
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [mapRider, setMapRider] = useState<DeliveryPartner | null>(null);
+  const [mapOrder, setMapOrder] = useState<Order | null>(null);
+  const [detailRider, setDetailRider] = useState<DeliveryPartner | null>(null);
+  const autoAssigned = useRef(new Set<string>());
+
+  const assignmentMode: FulfillmentMode = dashboard.data?.controls.deliveryAssignmentMode ?? 'manual';
+  const auto = assignmentMode === 'auto';
 
   const orders = useMemo(() => sortOrdersLatestFirst(list.data?.data ?? []), [list.data?.data]);
   const readyOrders = useMemo(() => orders.filter(isReadyToAssign), [orders]);
@@ -59,12 +77,38 @@ export function DispatchPage() {
   const busy = assignRider.isPending;
 
   const assign = (rider: DeliveryPartner) => {
-    if (!selectedOrder || !canAssign || busy) return;
+    if (!selectedOrder || !canAssign || busy || auto) return;
     assignRider.mutate(
       { id: selectedOrder.id, riderId: rider.id },
       { onSuccess: () => setSelectedOrderId(null) },
     );
   };
+
+  useEffect(() => {
+    if (!auto) {
+      autoAssigned.current.clear();
+      return;
+    }
+    if (!canAssign || busy) return;
+    const waiting = readyOrders.find((order) => !autoAssigned.current.has(order.id));
+    const rider = pickRider(availableRiders);
+    if (!waiting || !rider) return;
+    autoAssigned.current.add(waiting.id);
+    assignRider.mutate({ id: waiting.id, riderId: rider.id });
+  }, [assignRider, auto, availableRiders, busy, canAssign, readyOrders]);
+
+  const openMap = (rider: DeliveryPartner, order?: Order | null) => {
+    setDetailRider(null);
+    setMapOrder(order ?? null);
+    setMapRider(rider);
+  };
+
+  const openDetails = (rider: DeliveryPartner) => {
+    setMapRider(null);
+    setDetailRider(rider);
+  };
+
+  const riderOf = (order: Order) => (riders.data ?? []).find((row) => row.id === order.riderId);
 
   const liveColumns: Column<Order>[] = [
     {
@@ -86,14 +130,56 @@ export function DispatchPage() {
       render: (row) => <StatusChip status={row.deliveryState} label={DELIVERY_STATE_LABELS[row.deliveryState]} />,
     },
     { id: 'when', label: 'Promised', render: (row) => formatDateTime(row.promisedAt) },
+    {
+      id: 'gps',
+      label: '',
+      align: 'right',
+      render: (row) => {
+        const rider = riderOf(row);
+        if (!rider) return null;
+        return (
+          <Stack direction="row" gap={0.25} justifyContent="flex-end" onClick={(e) => e.stopPropagation()}>
+            <Tooltip title="GPS map">
+              <IconButton size="small" onClick={() => openMap(rider, row)}>
+                <MapRoundedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Partner details">
+              <IconButton size="small" onClick={() => openDetails(rider)}>
+                <PersonRoundedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Stack>
+        );
+      },
+    },
   ];
 
   return (
     <Stack gap={2.5}>
       <PageHeader
+        highlightTitle
         eyebrow="Dispatch"
         title="Out for delivery"
-        subtitle="Ready-for-delivery orders wait here until you assign an available delivery boy."
+        subtitle={
+          auto
+            ? 'Automatic assignment sends each ready ticket to the free rider with the best rating.'
+            : 'Select a ready order, then assign an available delivery boy. Open GPS or partner details anytime.'
+        }
+        actions={
+          <ToggleButtonGroup
+            exclusive
+            size="small"
+            value={assignmentMode}
+            disabled={!canAssign || updateControls.isPending}
+            onChange={(_e, value: FulfillmentMode | null) => {
+              if (value) updateControls.mutate({ deliveryAssignmentMode: value });
+            }}
+          >
+            <ToggleButton value="auto">Automatic assignment</ToggleButton>
+            <ToggleButton value="manual">Manual assignment</ToggleButton>
+          </ToggleButtonGroup>
+        }
       />
       {list.isError || riders.isError ? (
         <ErrorState
@@ -157,7 +243,7 @@ export function DispatchPage() {
             tone={{ bar: brand.wine, wash: brand.wash }}
             empty="No delivery boys are available right now."
           >
-            {selectedOrder ? (
+            {selectedOrder && !auto ? (
               <Box
                 sx={{
                   px: 1.5,
@@ -177,16 +263,20 @@ export function DispatchPage() {
               </Box>
             ) : (
               <Typography variant="caption" color="text.secondary" sx={{ px: 0.5 }}>
-                Select a ready order, then assign it to a rider.
+                {auto
+                  ? 'Automatic mode is on. Ready tickets assign themselves. Use GPS or contact on a rider anytime.'
+                  : 'Select a ready order, then assign it to a rider.'}
               </Typography>
             )}
             {availableRiders.map((rider) => (
               <RiderCard
                 key={rider.id}
                 rider={rider}
-                disabled={!canAssign || !selectedOrder || busy}
-                pending={busy}
+                disabled={!canAssign || !selectedOrder || busy || auto}
+                pending={busy && assignRider.variables?.riderId === rider.id}
                 onAssign={() => assign(rider)}
+                onMap={() => openMap(rider, selectedOrder)}
+                onDetails={() => openDetails(rider)}
               />
             ))}
           </BoardColumn>
@@ -206,6 +296,20 @@ export function DispatchPage() {
           emptyMessage="No orders are out with a rider yet."
         />
       </Stack>
+      <RiderGpsDialog
+        rider={mapRider}
+        order={mapOrder}
+        onClose={() => {
+          setMapRider(null);
+          setMapOrder(null);
+        }}
+      />
+      <RiderDetailsDialog
+        rider={detailRider}
+        orders={liveDrops.filter((row) => row.riderId === detailRider?.id)}
+        onClose={() => setDetailRider(null)}
+        onOpenMap={() => detailRider && openMap(detailRider)}
+      />
     </Stack>
   );
 }
@@ -350,11 +454,15 @@ function RiderCard({
   disabled,
   pending,
   onAssign,
+  onMap,
+  onDetails,
 }: {
   rider: DeliveryPartner;
   disabled: boolean;
   pending: boolean;
   onAssign: () => void;
+  onMap: () => void;
+  onDetails: () => void;
 }) {
   return (
     <Card sx={{ border: 'none', boxShadow: '0 10px 24px rgba(28,25,23,0.06)' }}>
@@ -389,18 +497,22 @@ function RiderCard({
             <Typography variant="caption" color="text.secondary" display="block">
               {rider.vehicle} · {rider.locationLabel}
             </Typography>
-            <Stack direction="row" alignItems="center" gap={0.75} sx={{ mt: 1.25 }}>
+            <Stack direction="row" alignItems="center" gap={0.5} sx={{ mt: 1.25 }}>
               <TwoWheelerRoundedIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
               <Typography variant="caption" color="text.secondary">
                 Rating {rider.rating.toFixed(1)}
               </Typography>
-              <Button
-                size="small"
-                variant="contained"
-                sx={{ ml: 'auto' }}
-                disabled={disabled}
-                onClick={onAssign}
-              >
+              <Tooltip title="GPS map">
+                <IconButton size="small" onClick={onMap} sx={{ ml: 'auto' }}>
+                  <MapRoundedIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Details & contact">
+                <IconButton size="small" onClick={onDetails}>
+                  <PersonRoundedIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Button size="small" variant="contained" disabled={disabled} onClick={onAssign}>
                 {pending ? 'Assigning…' : 'Assign'}
               </Button>
             </Stack>

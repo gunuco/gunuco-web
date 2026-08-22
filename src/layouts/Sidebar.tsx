@@ -31,7 +31,7 @@ const paperSx = {
   width: WIDTH,
   boxSizing: 'border-box',
   border: 'none',
-  background: `linear-gradient(185deg, ${brand.wineMid} 0%, ${brand.wine} 52%, ${brand.wineDark} 100%)`,
+  background: brand.wine,
   color: brand.cream,
 } as const;
 
@@ -83,8 +83,15 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
               </Typography>
               {sectionItems.map((item) => {
                 const Icon = NAV_ICONS[item.icon] ?? DashboardRoundedFallback;
+                const moreSpecific = sectionItems.some(
+                  (other) =>
+                    other.path !== item.path &&
+                    other.path.startsWith(`${item.path}/`) &&
+                    (location.pathname === other.path || location.pathname.startsWith(`${other.path}/`)),
+                );
                 const active =
-                  location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
+                  location.pathname === item.path ||
+                  (location.pathname.startsWith(`${item.path}/`) && !moreSpecific);
                 return (
                   <ListItemButton
                     key={item.id}

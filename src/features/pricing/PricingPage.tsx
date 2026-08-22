@@ -5,17 +5,19 @@ import { useProducts } from '@/hooks/useProducts';
 import { getCategoryById } from '@/utils/category';
 import { formatCurrency } from '@/utils/format';
 
-export function PricingPage() {
+export function PricingPage({ embedded = false }: { embedded?: boolean }) {
   const { data: categories = [] } = useCategories();
   const products = useProducts();
 
   return (
     <Stack gap={2.5}>
-      <PageHeader
-        title="Pricing"
-        eyebrow="Commerce"
-        subtitle="Each product stores a matrix of amount → price. The POS and catalogue preview share one quoting engine."
-      />
+      {embedded ? null : (
+        <PageHeader
+          title="Pricing"
+          eyebrow="Commerce"
+          subtitle="Each product stores a matrix of amount → price. The POS and catalogue preview share one quoting engine."
+        />
+      )}
       <Grid container spacing={2}>
         {(products.data ?? []).map((p) => (
           <Grid item xs={12} md={6} lg={4} key={p.id}>

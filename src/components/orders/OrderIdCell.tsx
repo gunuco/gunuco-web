@@ -1,11 +1,11 @@
 import { Box, Stack, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { brand } from '@/theme/colors';
-import { formatDateTime } from '@/utils/format';
+import { formatShortDateTime } from '@/utils/format';
 
 export function OrderIdCell({ orderNumber, placedAt }: { orderNumber: string; placedAt: string }) {
   return (
-    <Stack alignItems="flex-start" gap={0.5}>
+    <Stack alignItems="center" gap={0.5} sx={{ width: '100%' }}>
       <Typography fontWeight={800} fontSize={13.5} sx={{ letterSpacing: '0.01em', lineHeight: 1.2 }}>
         {orderNumber}
       </Typography>
@@ -19,7 +19,7 @@ export function OrderIdCell({ orderNumber, placedAt }: { orderNumber: string; pl
         }}
       >
         <Typography sx={{ fontSize: 11, fontWeight: 700, color: brand.goldDark, lineHeight: 1.35 }}>
-          {formatDateTime(placedAt)}
+          {formatShortDateTime(placedAt)}
         </Typography>
       </Box>
     </Stack>

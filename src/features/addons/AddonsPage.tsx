@@ -10,8 +10,9 @@ import { useAddons, useCreateAddon, useUpdateAddon } from '@/hooks/useResources'
 import type { Addon } from '@/types';
 import { getCategoryById } from '@/utils/category';
 import { formatCurrency } from '@/utils/format';
+import { isPendingForId } from '@/utils/mutation';
 
-export function AddonsPage() {
+export function AddonsPage({ embedded = false }: { embedded?: boolean }) {
   const { data: categories = [] } = useCategories();
   const list = useAddons();
   const create = useCreateAddon();
@@ -41,7 +42,7 @@ export function AddonsPage() {
           <Switch
             size="small"
             checked={r.active}
-            disabled={update.isPending}
+            disabled={isPendingForId(update, r.id)}
             onChange={(_, checked) => update.mutate({ id: r.id, payload: { active: checked } })}
           />
         </Stack>
@@ -51,16 +52,24 @@ export function AddonsPage() {
 
   return (
     <Stack gap={2.5}>
-      <PageHeader
-        title="Add-ons"
-        eyebrow="Extras"
-        subtitle="Applicable categories are IDs from GET /categories — not a hardcoded cake list."
-        actions={
+      {embedded ? (
+        <Stack direction="row" justifyContent="flex-end">
           <Button variant="contained" startIcon={<AddRoundedIcon />} onClick={() => setOpen(true)}>
             Add
           </Button>
-        }
-      />
+        </Stack>
+      ) : (
+        <PageHeader
+          title="Add-ons"
+          eyebrow="Extras"
+          subtitle="Applicable categories are IDs from GET /categories — not a hardcoded cake list."
+          actions={
+            <Button variant="contained" startIcon={<AddRoundedIcon />} onClick={() => setOpen(true)}>
+              Add
+            </Button>
+          }
+        />
+      )}
       <DataTable columns={columns} rows={list.data ?? []} rowKey={(r) => r.id} loading={list.isLoading ? 5 : false} />
       <AppModal open={open} title="New add-on" onClose={() => setOpen(false)}>
         <Stack gap={2} sx={{ pt: 1 }}>

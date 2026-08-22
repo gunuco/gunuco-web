@@ -11,7 +11,7 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
-import type { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { brand } from '@/theme/colors';
 
 export interface Column<T> {
@@ -39,6 +39,8 @@ interface DataTableProps<T> {
   connected?: boolean;
   bodyColor?: string;
   headerColor?: string;
+  /** Size columns to each header; keep a fixed gap between names. */
+  headerFit?: boolean;
 }
 
 export function DataTable<T>({
@@ -56,10 +58,13 @@ export function DataTable<T>({
   connected = false,
   bodyColor,
   headerColor,
+  headerFit = false,
 }: DataTableProps<T>) {
   const skeletonRows = typeof loading === 'number' ? loading : 5;
   const isLoading = Boolean(loading);
   const equalWidth = `${100 / Math.max(columns.length, 1)}%`;
+  const colGap = 2;
+  const displayColumns = columns;
 
   return (
     <Paper
@@ -84,39 +89,33 @@ export function DataTable<T>({
             borderSpacing: 0,
             '& th, & td': {
               boxSizing: 'border-box',
-              px: 2,
-            },
-            '& th:first-of-type, & td:first-of-type': {
-              pl: 3,
-            },
-            '& th:last-of-type, & td:last-of-type': {
-              pr: 3,
+              px: headerFit ? colGap : 1.5,
             },
           }}
         >
           <TableHead>
             <TableRow>
-              {columns.map((col) => (
-                  <TableCell
-                    key={col.id}
-                    align="center"
-                    sx={{
-                      fontWeight: 800,
-                      color: brand.cream,
-                      bgcolor: headerColor ?? brand.wine,
-                      borderBottom: `2px solid ${brand.gold}`,
-                      width: col.width ?? equalWidth,
-                      minWidth: col.minWidth,
-                      py: 1.35,
-                      fontSize: 15,
-                      letterSpacing: '0.06em',
-                      textTransform: 'uppercase',
-                      whiteSpace: 'nowrap',
-                      textAlign: 'center',
-                    }}
-                  >
-                    {col.label}
-                  </TableCell>
+              {displayColumns.map((col) => (
+                <TableCell
+                  key={col.id}
+                  align={col.align ?? 'center'}
+                  sx={{
+                    fontWeight: 800,
+                    color: brand.cream,
+                    bgcolor: headerColor ?? brand.wine,
+                    borderBottom: `2px solid ${brand.gold}`,
+                    width: col.width ?? equalWidth,
+                    minWidth: col.minWidth,
+                    py: 1.35,
+                    fontSize: 15,
+                    letterSpacing: '0.06em',
+                    textTransform: 'uppercase',
+                    whiteSpace: 'nowrap',
+                    textAlign: col.align ?? 'center',
+                  }}
+                >
+                  {col.label}
+                </TableCell>
               ))}
             </TableRow>
           </TableHead>
@@ -124,8 +123,12 @@ export function DataTable<T>({
             {isLoading
               ? Array.from({ length: skeletonRows }).map((_, i) => (
                   <TableRow key={`sk-${i}`}>
-                    {columns.map((col) => (
-                      <TableCell key={col.id} align={col.align ?? 'center'} sx={{ py: 1.5, width: col.width ?? equalWidth }}>
+                    {displayColumns.map((col) => (
+                      <TableCell
+                        key={col.id}
+                        align={col.align ?? 'center'}
+                        sx={{ py: 1.5, width: col.width ?? equalWidth }}
+                      >
                         <Skeleton />
                       </TableCell>
                     ))}
@@ -143,29 +146,39 @@ export function DataTable<T>({
                     '&:hover': { bgcolor: brand.wash },
                   }}
                 >
-                  {columns.map((col) => (
-                  <TableCell
-                    key={col.id}
-                    align="center"
-                    sx={{
-                      py: 1.5,
-                      width: col.width ?? equalWidth,
-                      borderColor: brand.line,
-                      whiteSpace: col.noWrap === false ? 'normal' : 'nowrap',
-                      textAlign: 'center',
-                      verticalAlign: 'middle',
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
-                      {col.render(row)}
-                    </Box>
-                  </TableCell>
+                  {displayColumns.map((col) => (
+                    <TableCell
+                      key={col.id}
+                      align={col.align ?? 'center'}
+                      sx={{
+                        py: 1.5,
+                        width: col.width ?? equalWidth,
+                        borderColor: brand.line,
+                        whiteSpace: 'normal',
+                        textAlign: col.align ?? 'center',
+                        verticalAlign: 'middle',
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent:
+                            col.align === 'left' ? 'flex-start' : col.align === 'right' ? 'flex-end' : 'center',
+                          alignItems: 'center',
+                          width: '100%',
+                          textAlign: col.align ?? 'center',
+                          minWidth: 0,
+                        }}
+                      >
+                        {col.render(row)}
+                      </Box>
+                    </TableCell>
                   ))}
                 </TableRow>
               ))}
             {!isLoading && rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columns.length} sx={{ py: 8, textAlign: 'center' }}>
+                <TableCell colSpan={displayColumns.length} sx={{ py: 8, textAlign: 'center' }}>
                   <Typography color="text.secondary">{emptyMessage}</Typography>
                 </TableCell>
               </TableRow>

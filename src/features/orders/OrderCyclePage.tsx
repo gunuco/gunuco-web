@@ -8,6 +8,7 @@ import { FilterBar, filterFieldProps } from '@/components/ui/FilterBar';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { StatusChip } from '@/components/ui/StatusChip';
 import { HighlightName } from '@/components/orders/HighlightName';
+import { CustomerCell, CustomizationsCell } from '@/components/orders/CustomerCell';
 import { OrderIdCell } from '@/components/orders/OrderIdCell';
 import { TotalCell } from '@/components/orders/TotalCell';
 import {
@@ -24,6 +25,7 @@ import type { Order, OrderStatus } from '@/types';
 import { brand } from '@/theme/colors';
 import { getAttributeSchema, getCategoryById, resolveAttributeLabel } from '@/utils/category';
 import { formatCurrency, formatDateTime } from '@/utils/format';
+import { formatOrderCustomizations } from '@/utils/orderCustomizations';
 import { sortOrdersLatestFirst } from '@/utils/orderNumber';
 
 const INBOX: OrderStatus[] = ['not_accepted'];
@@ -81,7 +83,15 @@ export function OrderCyclePage() {
     {
       id: 'customer',
       label: 'Customer',
+      align: 'left',
       render: (row) => <HighlightName value={row.customerName} tone="wine" />,
+    },
+    {
+      id: 'details',
+      label: 'Details',
+      render: (row) => (
+        <CustomerCell phone={row.customerPhone} address={row.customerAddress} />
+      ),
     },
     {
       id: 'cat',
@@ -93,6 +103,11 @@ export function OrderCyclePage() {
           '—';
         return <HighlightName value={name} tone="gold" />;
       },
+    },
+    {
+      id: 'custom',
+      label: 'Customizations',
+      render: (row) => <CustomizationsCell value={formatOrderCustomizations(row, categories)} />,
     },
     {
       id: 'stage',
@@ -117,7 +132,6 @@ export function OrderCyclePage() {
     {
       id: 'total',
       label: 'Total',
-      minWidth: 120,
       render: (row) => <TotalCell amount={row.total} paid={row.paymentStatus === 'completed'} />,
     },
   ];
@@ -174,6 +188,7 @@ export function OrderCyclePage() {
         ) : (
           <DataTable
             connected
+            headerFit
             columns={columns}
             rows={paged}
             rowKey={(row) => row.id}

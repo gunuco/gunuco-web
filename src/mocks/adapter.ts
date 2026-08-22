@@ -229,7 +229,7 @@ async function route(config: InternalAxiosRequestConfig): Promise<AxiosResponse>
     return ok(config, [
       ...points,
       { categoryId: 'cat_premium', categoryName: 'GUNUCO PREMIUM CAKES', value: 9169 },
-      { categoryId: 'cat_wedding', categoryName: 'Wedding or Anniversary', value: 14695 },
+      { categoryId: 'cat_wedding', categoryName: 'Occasion cakes', value: 14695 },
       { categoryId: 'cat_nyc_cookies', categoryName: 'NYC Cookies', value: cookieValue || 2543 },
     ]);
   }
@@ -435,9 +435,12 @@ async function route(config: InternalAxiosRequestConfig): Promise<AxiosResponse>
       subcategoryId: body.subcategoryId,
       description: body.description ?? '',
       imageHue: body.imageHue ?? Math.floor(Math.random() * 360),
+      imageUrl: body.imageUrl,
+      basePrice: body.basePrice,
       active: body.active ?? true,
       attributes: body.attributes ?? {},
       priceTiers: body.priceTiers ?? [],
+      customizationGroups: body.customizationGroups ?? [],
       addOnIds: body.addOnIds ?? [],
       tags: body.tags ?? [],
       createdAt: nowIso(),

@@ -90,8 +90,8 @@ export function OrderControlPanel({ settings, categories, loading }: Props) {
             sx={{ width: 160 }}
           />
           <TextField
-            label="Wedding window"
-            value={`${APP_CONFIG.weddingMinHours}h – ${APP_CONFIG.weddingMaxHours}h`}
+            label="Occasion window"
+            value={`Up to ${APP_CONFIG.occasionMaxDays} days`}
             InputProps={{ readOnly: true }}
             sx={{ minWidth: 180 }}
           />

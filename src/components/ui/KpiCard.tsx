@@ -39,7 +39,7 @@ export function KpiCard({
         position: 'relative',
         overflow: 'hidden',
         color: solid ? brand.cream : 'inherit',
-        background: solid ? `linear-gradient(145deg, ${accent} 0%, ${brand.wineDark} 100%)` : undefined,
+        bgcolor: solid ? accent : undefined,
         border: solid ? 'none' : undefined,
         transition: 'transform 0.2s ease, box-shadow 0.2s ease',
         '&:hover': {

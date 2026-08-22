@@ -89,7 +89,7 @@ const handCraftedOrders: Order[] = [
     riderId: null,
     deliveryState: 'unassigned',
     notes: '',
-    promisedAt: '2026-08-12T16:00:00.000Z',
+    promisedAt: '2026-08-24T16:00:00.000Z',
     createdAt: '2026-08-12T08:40:00.000Z',
     updatedAt: '2026-08-12T08:55:00.000Z',
   }),
@@ -166,7 +166,7 @@ const handCraftedOrders: Order[] = [
     riderId: null,
     deliveryState: 'unassigned',
     notes: 'Venue drop at 7pm. Handle upright.',
-    promisedAt: '2026-08-12T19:00:00.000Z',
+    promisedAt: '2026-08-29T19:00:00.000Z',
     createdAt: '2026-08-11T19:22:00.000Z',
     updatedAt: '2026-08-12T10:10:00.000Z',
   }),
@@ -203,7 +203,7 @@ const handCraftedOrders: Order[] = [
     riderId: null,
     deliveryState: 'unassigned',
     notes: '',
-    promisedAt: '2026-08-12T15:30:00.000Z',
+    promisedAt: '2026-09-02T15:30:00.000Z',
     createdAt: '2026-08-12T07:50:00.000Z',
     updatedAt: '2026-08-12T12:40:00.000Z',
   }),
@@ -277,7 +277,7 @@ const handCraftedOrders: Order[] = [
     riderId: 'rid_05',
     deliveryState: 'delivered',
     notes: '',
-    promisedAt: '2026-08-12T12:30:00.000Z',
+    promisedAt: '2026-08-23T12:30:00.000Z',
     createdAt: '2026-08-12T08:02:00.000Z',
     updatedAt: '2026-08-12T12:18:00.000Z',
   }),
@@ -462,7 +462,7 @@ const handCraftedOrders: Order[] = [
     riderId: null,
     deliveryState: 'unassigned',
     notes: 'COD. Confirm before dispatch.',
-    promisedAt: '2026-08-12T21:00:00.000Z',
+    promisedAt: '2026-09-10T21:00:00.000Z',
     createdAt: '2026-08-12T11:48:00.000Z',
     updatedAt: '2026-08-12T11:52:00.000Z',
   }),
@@ -606,7 +606,14 @@ function extraOrders(): Order[] {
             : 'pickup_scheduled'
           : 'not_applicable',
       notes: flow.status === 'not_accepted' ? 'Awaiting acceptance.' : '',
-      promisedAt: `2026-08-${day}T${String(14 + (i % 6)).padStart(2, '0')}:00:00.000Z`,
+      promisedAt:
+        tpl.subcategoryId === 'cat_wedding'
+          ? (() => {
+              const dayOffset = 22 + (i % 20);
+              if (dayOffset <= 31) return `2026-08-${String(dayOffset).padStart(2, '0')}T15:00:00.000Z`;
+              return `2026-09-${String(dayOffset - 31).padStart(2, '0')}T15:00:00.000Z`;
+            })()
+          : `2026-08-${day}T${String(14 + (i % 6)).padStart(2, '0')}:00:00.000Z`,
       createdAt,
       updatedAt: createdAt,
     } satisfies Order;

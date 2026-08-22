@@ -27,7 +27,7 @@ import { APP_CONFIG } from '@/config/app.config';
 import { ROLE_LABELS } from '@/constants/roles';
 import { brand } from '@/theme/colors';
 import { SIDEBAR_WIDTH } from '@/layouts/Sidebar';
-import { navForRole } from '@/utils/permissions';
+import { navForRole, isCustomerSupport } from '@/utils/permissions';
 import { useOrders } from '@/hooks/useOrders';
 import { formatTime } from '@/utils/format';
 
@@ -44,7 +44,7 @@ export function Header({ onMenu }: HeaderProps) {
   const [clock, setClock] = useState(() => new Date());
   const pending = useOrders({ status: 'not_accepted', page: 1, pageSize: 6 });
   const navItems = user ? navForRole(user.role) : [];
-  const alerts = pending.data?.data ?? [];
+  const alerts = isCustomerSupport(user?.role) ? [] : (pending.data?.data ?? []);
 
   useEffect(() => {
     const id = window.setInterval(() => setClock(new Date()), 30_000);
@@ -136,11 +136,13 @@ export function Header({ onMenu }: HeaderProps) {
             label="Live"
             sx={{ bgcolor: 'success.light', color: 'success.main', fontWeight: 700 }}
           />
-          <IconButton onClick={(e) => setNoteEl(e.currentTarget)}>
-            <Badge badgeContent={alerts.length} color="error" max={9}>
-              <NotificationsNoneRoundedIcon />
-            </Badge>
-          </IconButton>
+          {isCustomerSupport(user?.role) ? null : (
+            <IconButton onClick={(e) => setNoteEl(e.currentTarget)}>
+              <Badge badgeContent={alerts.length} color="error" max={9}>
+                <NotificationsNoneRoundedIcon />
+              </Badge>
+            </IconButton>
+          )}
           <Stack
             direction="row"
             alignItems="center"

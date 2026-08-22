@@ -1,114 +1,142 @@
-import { Box, Button, Paper, Stack, Tab, Tabs, Typography } from '@mui/material';
+import { Box, Paper, Stack, Tab, Tabs, Typography } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import { useState } from 'react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { AddonsPage } from '@/features/addons/AddonsPage';
-import { CatalogPage } from '@/features/catalog/CatalogPage';
 import { CategoriesPage } from '@/features/categories/CategoriesPage';
-import { PricingPage } from '@/features/pricing/PricingPage';
+import { CustomizationPricingTab } from '@/features/menu/CustomizationPricingTab';
+import { MenuPricingTab } from '@/features/menu/MenuPricingTab';
+import { MenuProductsTab } from '@/features/menu/MenuProductsTab';
 import { useCategories } from '@/hooks/useCategories';
+import { brand } from '@/theme/colors';
 import { buildCategoryTree } from '@/utils/category';
 import { canManageCatalog } from '@/utils/permissions';
 import { useAuthStore } from '@/store/authStore';
 
-const TABS = ['Products', 'Categories', 'Add-Ons', 'Customization', 'Pricing & Weights', 'Locations'] as const;
+const TABS = ['Products', 'Categories', 'Add-ons', 'Customization', 'Pricing'] as const;
 
 export function MenuManagementPage() {
   const [tab, setTab] = useState(0);
+  const [treeCategoryId, setTreeCategoryId] = useState('');
   const { data: categories = [] } = useCategories();
   const tree = buildCategoryTree(categories);
   const role = useAuthStore((s) => s.user?.role);
   const canEdit = role ? canManageCatalog(role) : false;
+  const showTree = tab === 0;
+
+  const selectTreeNode = (id: string) => {
+    setTreeCategoryId((current) => (current === id ? '' : id));
+  };
 
   return (
     <Stack gap={2.5}>
       <PageHeader
         eyebrow="Catalogue"
         title="Menu Management"
-        subtitle="One workspace for products, categories, add-ons and pricing. Branch Managers can view definitions and update location availability only."
+        subtitle="Zomato-style menu editor: photo, base price, variants, customization extras, and a live customer preview."
       />
+      <Tabs
+        value={tab}
+        onChange={(_e, v) => setTab(v)}
+        variant="scrollable"
+        sx={{
+          minHeight: 42,
+          borderBottom: 1,
+          borderColor: 'divider',
+          '& .MuiTab-root': { minHeight: 42, fontWeight: 700 },
+        }}
+      >
+        {TABS.map((label) => (
+          <Tab key={label} label={label} />
+        ))}
+      </Tabs>
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: '240px minmax(0,1fr)' },
+          gridTemplateColumns: showTree ? { xs: '1fr', md: '220px minmax(0,1fr)' } : 'minmax(0,1fr)',
           gap: 2,
-          minHeight: 560,
+          minHeight: 480,
         }}
       >
-        <Paper sx={{ p: 1.5, overflow: 'auto' }}>
-          <Typography variant="subtitle2" color="text.secondary" sx={{ px: 1, pb: 1 }}>
-            Category tree
-          </Typography>
-          {tree.map((parent) => (
-            <Box key={parent.id} sx={{ mb: 1 }}>
-              <Typography fontWeight={800} fontSize={13} sx={{ px: 1, opacity: parent.active ? 1 : 0.45 }}>
-                {parent.name}
-              </Typography>
-              {parent.children.map((child) => (
-                <Typography key={child.id} variant="body2" sx={{ px: 2, py: 0.4, opacity: child.active ? 1 : 0.45 }}>
-                  {child.name}
-                </Typography>
-              ))}
-            </Box>
-          ))}
-          {!canEdit ? (
-            <Typography variant="caption" color="text.secondary" sx={{ px: 1 }}>
-              Read-only definitions for this role.
+        {showTree ? (
+          <Paper sx={{ p: 1.5, overflow: 'auto' }}>
+            <Typography variant="subtitle2" color="text.secondary" sx={{ px: 1, pb: 1 }}>
+              Filter products
             </Typography>
-          ) : null}
-        </Paper>
-        <Paper sx={{ p: 2 }}>
-          <Tabs
-            value={tab}
-            onChange={(_e, v) => setTab(v)}
-            variant="scrollable"
-            sx={{ mb: 2, minHeight: 42, '& .MuiTab-root': { minHeight: 42, fontWeight: 700 } }}
-          >
-            {TABS.map((label) => (
-              <Tab key={label} label={label} />
+            <TreeRow
+              label="All products"
+              selected={treeCategoryId === ''}
+              onClick={() => setTreeCategoryId('')}
+            />
+            {tree.map((parent) => (
+              <Box key={parent.id} sx={{ mt: 0.5 }}>
+                <TreeRow
+                  label={parent.name}
+                  selected={treeCategoryId === parent.id}
+                  muted={!parent.active}
+                  onClick={() => selectTreeNode(parent.id)}
+                />
+                {parent.children.map((child) => (
+                  <TreeRow
+                    key={child.id}
+                    label={child.name}
+                    nested
+                    selected={treeCategoryId === child.id}
+                    muted={!child.active}
+                    onClick={() => selectTreeNode(child.id)}
+                  />
+                ))}
+              </Box>
             ))}
-          </Tabs>
-          {tab === 0 ? <CatalogPage embedded /> : null}
+            {!canEdit ? (
+              <Typography variant="caption" color="text.secondary" sx={{ px: 1, pt: 1, display: 'block' }}>
+                Read-only definitions for this role.
+              </Typography>
+            ) : null}
+          </Paper>
+        ) : null}
+        <Paper sx={{ p: 2, minWidth: 0 }}>
+          {tab === 0 ? <MenuProductsTab categoryId={treeCategoryId} /> : null}
           {tab === 1 ? <CategoriesPage embedded /> : null}
-          {tab === 2 ? <AddonsPage /> : null}
-          {tab === 3 ? <CustomizationMatrix /> : null}
-          {tab === 4 ? <PricingPage /> : null}
-          {tab === 5 ? (
-            <Typography color="text.secondary">
-              Location availability is bound to the production house at launch. Future branches inherit this contract
-              without a migration.
-            </Typography>
-          ) : null}
+          {tab === 2 ? <AddonsPage embedded /> : null}
+          {tab === 3 ? <CustomizationPricingTab /> : null}
+          {tab === 4 ? <MenuPricingTab /> : null}
         </Paper>
       </Box>
     </Stack>
   );
 }
 
-function CustomizationMatrix() {
-  const { data: categories = [] } = useCategories();
-  const groups = ['flavour', 'egg', 'sweetener', 'flour', 'size'] as const;
+function TreeRow({
+  label,
+  selected,
+  nested,
+  muted,
+  onClick,
+}: {
+  label: string;
+  selected: boolean;
+  nested?: boolean;
+  muted?: boolean;
+  onClick: () => void;
+}) {
   return (
-    <Stack gap={1.5}>
-      <Typography variant="body2" color="text.secondary">
-        Each group is independent. ON requires a valid default and 1kg price. OFF hides the group. Inherit uses the
-        nearest parent. Quantity cannot be turned off.
+    <Box
+      onClick={onClick}
+      sx={{
+        px: nested ? 2.25 : 1,
+        py: 0.55,
+        borderRadius: 1,
+        cursor: 'pointer',
+        bgcolor: selected ? alpha(brand.wine, 0.1) : 'transparent',
+        border: selected ? `1px solid ${alpha(brand.wine, 0.18)}` : '1px solid transparent',
+        opacity: muted ? 0.45 : 1,
+        '&:hover': { bgcolor: selected ? alpha(brand.wine, 0.12) : alpha(brand.wine, 0.05) },
+      }}
+    >
+      <Typography fontWeight={selected ? 800 : nested ? 500 : 800} fontSize={13} sx={{ color: selected ? brand.wine : 'inherit' }}>
+        {label}
       </Typography>
-      {categories
-        .filter((c) => c.active)
-        .map((cat) => (
-          <Paper key={cat.id} variant="outlined" sx={{ p: 1.5 }}>
-            <Typography fontWeight={800} fontSize={13}>
-              {cat.name}
-            </Typography>
-            <Stack direction="row" gap={1} flexWrap="wrap" sx={{ mt: 1 }}>
-              {groups.map((g) => (
-                <Button key={g} size="small" variant="outlined" disabled>
-                  {g}: {cat.customization[g].toUpperCase()}
-                </Button>
-              ))}
-            </Stack>
-          </Paper>
-        ))}
-    </Stack>
+    </Box>
   );
 }

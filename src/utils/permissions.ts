@@ -1,5 +1,6 @@
 import { NAV_ITEMS } from '@/constants/nav';
 import type { NavItem, Role } from '@/types';
+import { isSupportHost } from '@/utils/supportHost';
 
 export function canAccess(role: Role, item: NavItem): boolean {
   return item.roles.includes(role);
@@ -31,6 +32,19 @@ export function canEditGlobalControls(role: Role): boolean {
 
 export function canManageUsers(role: Role): boolean {
   return role === 'owner' || role === 'admin';
+}
+
+export function canWorkSupport(role: Role): boolean {
+  return role === 'owner' || role === 'admin' || role === 'branch_manager' || role === 'customer_support';
+}
+
+export function isCustomerSupport(role?: Role | null): boolean {
+  return role === 'customer_support';
+}
+
+export function homePathForRole(role: Role): string {
+  if (isSupportHost()) return '/support';
+  return role === 'customer_support' ? '/support' : '/dashboard';
 }
 
 export function isOwner(role?: Role | null): boolean {

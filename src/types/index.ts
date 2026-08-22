@@ -1,4 +1,4 @@
-export type Role = 'owner' | 'admin' | 'branch_manager';
+export type Role = 'owner' | 'admin' | 'branch_manager' | 'customer_support';
 
 export type OrderStatus =
   | 'not_accepted'
@@ -97,6 +97,7 @@ export interface Category {
   dailyLimit: number | null;
   dailyAccepted: number;
   customization: CustomizationMatrix;
+  customizationPricing?: CustomizationPriceGroup[];
   sameDayEligible: boolean;
 }
 
@@ -107,6 +108,19 @@ export interface PriceTier {
   price: number;
 }
 
+export interface CustomizationPriceOption {
+  value: string;
+  label: string;
+  extraPrice: number;
+}
+
+export interface CustomizationPriceGroup {
+  key: string;
+  label: string;
+  required: boolean;
+  options: CustomizationPriceOption[];
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -115,12 +129,15 @@ export interface Product {
   subcategoryId: string;
   description: string;
   imageHue: number;
+  imageUrl?: string;
+  basePrice?: number;
   active: boolean;
   featured?: boolean;
   sameDayEligible?: boolean;
   dailyQuota?: number;
   attributes: Record<string, string | number | boolean | string[]>;
   priceTiers: PriceTier[];
+  customizationGroups?: CustomizationPriceGroup[];
   addOnIds: string[];
   tags: string[];
   createdAt: string;
@@ -182,6 +199,8 @@ export interface DeliveryPartner {
   activeOrders: number;
   rating: number;
   locationLabel: string;
+  lat?: number;
+  lng?: number;
 }
 
 export interface User {
@@ -242,8 +261,32 @@ export interface SupportTicket {
   status: TicketStatus;
   assignedAgent: string | null;
   escalationOwner: string | null;
+  resolutionNote: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface TicketMessage {
+  id: string;
+  ticketId: string;
+  author: 'customer' | 'agent';
+  authorName: string;
+  body: string;
+  createdAt: string;
+}
+
+export interface SupportRefund {
+  id: string;
+  ticketId: string;
+  orderId: string;
+  orderNumber: string;
+  customerName: string;
+  amount: number;
+  kind: 'full' | 'partial';
+  reason: string;
+  status: 'processing' | 'completed';
+  initiatedAt: string;
+  agentName: string;
 }
 
 export interface Offer {
@@ -414,7 +457,7 @@ export interface OrderFilters {
   source?: OrderSource | '';
 }
 
-export type NavSection = 'operations' | 'catalogue' | 'fulfilment' | 'commerce' | 'system';
+export type NavSection = 'operations' | 'catalogue' | 'fulfilment' | 'commerce' | 'support' | 'system';
 
 export interface NavItem {
   id: string;

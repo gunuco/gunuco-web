@@ -110,7 +110,7 @@ export function DashboardPage() {
         {[
           { label: 'Cakes orders', value: formatNumber(data?.cakesOrders ?? 0), icon: <CakeRoundedIcon fontSize="small" />, accent: brand.wine },
           { label: 'Custom cakes', value: formatNumber(data?.customCakesOrders ?? 0), icon: <CakeRoundedIcon fontSize="small" />, accent: brand.goldDark },
-          { label: 'Wedding & anniversary', value: formatNumber(data?.weddingOrders ?? 0), hint: `${data?.atRiskWedding ?? 0} at risk`, icon: <FavoriteBorderRoundedIcon fontSize="small" />, accent: '#B42318' },
+          { label: 'Occasion cakes', value: formatNumber(data?.weddingOrders ?? 0), hint: `${data?.atRiskWedding ?? 0} at risk`, icon: <FavoriteBorderRoundedIcon fontSize="small" />, accent: '#B42318' },
           { label: 'Preparing', value: formatNumber(data?.preparing ?? 0), icon: <AccessTimeRoundedIcon fontSize="small" />, accent: '#B45309' },
           { label: 'Ready for delivery', value: formatNumber(data?.readyForDelivery ?? 0), icon: <LocalShippingRoundedIcon fontSize="small" />, accent: '#2F6B4F' },
           { label: 'POS today', value: formatCurrency(data?.posRevenueToday ?? 0), hint: `${data?.posSalesToday ?? 0} sales`, icon: <PointOfSaleRoundedIcon fontSize="small" />, accent: '#3B6B8C' },

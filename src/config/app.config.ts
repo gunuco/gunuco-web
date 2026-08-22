@@ -12,6 +12,7 @@ export const APP_CONFIG = {
   mockLatencyMs: 700,
   weddingMinHours: 72,
   weddingMaxHours: 720,
+  occasionMaxDays: 30,
   branchFeatureEnabled: false,
   globalPosEnabled: true,
   deliveryBands: [
@@ -22,4 +23,5 @@ export const APP_CONFIG = {
   ],
   maxDoorstepKm: 15,
   customCakeDeliveryExempt: true,
+  supportSubdomain: 'support',
 } as const;

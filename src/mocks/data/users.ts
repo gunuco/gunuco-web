@@ -27,4 +27,12 @@ export const seedUsers: User[] = [
     avatarInitials: 'VS',
     locationIds: ['loc_production'],
   },
+  {
+    id: 'usr_cs',
+    name: 'Meera Iyer',
+    email: 'support@gunuco.com',
+    role: 'customer_support',
+    avatarInitials: 'MI',
+    locationIds: ['loc_production'],
+  },
 ];
