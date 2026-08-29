@@ -14,7 +14,6 @@ import { APP_CONFIG } from '@/config/app.config';
 import { brand } from '@/theme/colors';
 import { ROLE_LABELS } from '@/constants/roles';
 import { seedUsers, DEMO_PASSWORD } from '@/mocks/data/users';
-import { authService } from '@/services/index';
 import { useAuthStore } from '@/store/authStore';
 import type { AuthUser } from '@/types';
 import { homePathForRole } from '@/utils/permissions';
@@ -32,6 +31,7 @@ export function LoginPage() {
     setLoading(true);
     setError('');
     try {
+      const { authService } = await import('@/services/authService');
       const user = (await authService.login(email, password)) as AuthUser;
       setSession(user);
       navigate(homePathForRole(user.role), { replace: true });
@@ -44,6 +44,7 @@ export function LoginPage() {
 
   return (
     <Box
+      component="main"
       sx={{
         minHeight: '100vh',
         display: 'grid',
@@ -60,7 +61,7 @@ export function LoginPage() {
           color: brand.cream,
         }}
       >
-        <GunucoMark size={44} withWordmark inverted />
+        <GunucoMark size={44} withWordmark inverted priority />
         <Box>
           <Typography variant="subtitle2" sx={{ color: brand.gold, mb: 2 }}>
             Admin console
@@ -77,12 +78,12 @@ export function LoginPage() {
           {APP_CONFIG.city.toUpperCase()} · PRODUCTION HOUSE
         </Typography>
       </Box>
-      <Stack alignItems="center" justifyContent="center" sx={{ p: 3 }}>
+      <Stack alignItems="center" justifyContent="center" sx={{ p: { xs: 2, sm: 3 } }}>
         <Box
           sx={{
             width: '100%',
             maxWidth: 440,
-            p: 4,
+            p: { xs: 2.5, sm: 4 },
             borderRadius: 4,
             bgcolor: 'background.paper',
             border: '1px solid',
@@ -92,10 +93,13 @@ export function LoginPage() {
         >
           <Stack component="form" onSubmit={submit} gap={2}>
             <Box>
+              <Box sx={{ display: { xs: 'block', md: 'none' }, mb: 2 }}>
+                <GunucoMark size={40} withWordmark priority />
+              </Box>
               <Typography variant="subtitle2" color="secondary.dark">
                 Welcome back
               </Typography>
-              <Typography variant="h5" sx={{ mt: 0.5 }}>
+              <Typography variant="h5" component="h1" sx={{ mt: 0.5 }}>
                 Sign in
               </Typography>
             </Box>

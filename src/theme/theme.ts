@@ -1,9 +1,22 @@
 import { createTheme } from '@mui/material/styles';
 import { brand, semantic } from '@/theme/colors';
 
-const sans = '"Plus Jakarta Sans", "Segoe UI", sans-serif';
+/**
+ * xs = phone only. sm/md/lg all start at 768px so small laptops,
+ * large laptops and desktops share one layout. Content uses % widths.
+ */
+const sans = '"Plus Jakarta Sans Variable", "Plus Jakarta Sans", "Segoe UI", sans-serif';
 
 export const theme = createTheme({
+  breakpoints: {
+    values: {
+      xs: 0,
+      sm: 768,
+      md: 768,
+      lg: 768,
+      xl: 1536,
+    },
+  },
   palette: {
     mode: 'light',
     primary: {
@@ -83,7 +96,8 @@ export const theme = createTheme({
     MuiButton: {
       defaultProps: { disableElevation: true },
       styleOverrides: {
-        root: { borderRadius: 10, paddingInline: 16, minHeight: 40 },
+        root: { borderRadius: 10, paddingInline: 16, minHeight: 44 },
+        sizeSmall: { minHeight: 32, paddingInline: 10, fontSize: 12 },
         containedPrimary: {
           boxShadow: '0 6px 16px rgba(93, 0, 30, 0.18)',
         },
@@ -137,6 +151,12 @@ export const theme = createTheme({
           fontSize: 12,
           borderRadius: 8,
         },
+      },
+    },
+    MuiIconButton: {
+      styleOverrides: {
+        root: { minWidth: 44, minHeight: 44 },
+        sizeSmall: { minWidth: 40, minHeight: 40 },
       },
     },
   },

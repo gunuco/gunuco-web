@@ -22,7 +22,7 @@ export function AppDrawer({ open, title, onClose, children, width = 460, footer 
       <Stack sx={{ height: '100%' }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ px: 2.5, py: 2 }}>
           <Typography variant="h6">{title}</Typography>
-          <IconButton onClick={onClose} size="small">
+          <IconButton onClick={onClose} size="small" aria-label="Close">
             <CloseRoundedIcon />
           </IconButton>
         </Stack>

@@ -16,6 +16,7 @@ import {
   Switch,
   TextField,
   Typography,
+  useMediaQuery,
 } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import { PhotoUploadField } from '@/features/menu/PhotoUploadField';
@@ -120,6 +121,7 @@ export function ProductEditorDialog({
   onSave: (payload: Partial<Product>) => void;
 }) {
   const addons = useAddons();
+  const compact = useMediaQuery('(max-width:767px)');
   const [draft, setDraft] = useState<Draft>(() => emptyDraft(categories));
 
   useEffect(() => {
@@ -180,7 +182,14 @@ export function ProductEditorDialog({
   }, [subcategory?.pricingModel]);
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg" scroll="paper">
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="lg"
+      scroll="paper"
+      fullScreen={compact}
+    >
       <DialogTitle sx={{ fontWeight: 800 }}>
         {product ? 'Update menu item' : 'Add menu item'}
       </DialogTitle>

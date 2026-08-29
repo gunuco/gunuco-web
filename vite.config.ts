@@ -17,4 +17,10 @@ export default defineConfig({
     host: true,
     allowedHosts: true,
   },
+  build: {
+    target: 'es2022',
+    cssCodeSplit: true,
+    modulePreload: { polyfill: false },
+    reportCompressedSize: false,
+  },
 });

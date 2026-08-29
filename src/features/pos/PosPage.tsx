@@ -125,14 +125,14 @@ export function PosPage() {
     <Box
       sx={{
         display: 'grid',
-        gridTemplateColumns: { xs: '1fr', lg: '240px minmax(0,1fr) 360px' },
+        gridTemplateColumns: { xs: '1fr', sm: 'minmax(12.5%, 18%) minmax(0,1fr) minmax(18%, 28%)' },
         gap: 1.5,
-        minHeight: { lg: 'calc(100vh - 140px)' },
+        minHeight: { sm: 'calc(100vh - 140px)' },
       }}
     >
       <Box
         sx={{
-          display: { xs: 'none', lg: 'block' },
+          display: { xs: 'none', sm: 'block' },
           bgcolor: '#fff',
           border: '1px solid',
           borderColor: 'divider',
@@ -155,7 +155,7 @@ export function PosPage() {
         ))}
       </Box>
 
-      <Box sx={{ bgcolor: '#fff', border: '1px solid', borderColor: 'divider', borderRadius: 3, p: 2 }}>
+      <Box sx={{ bgcolor: '#fff', border: '1px solid', borderColor: 'divider', borderRadius: 3, p: { xs: 1.5, sm: 2 } }}>
         <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" gap={1.5} sx={{ mb: 2 }}>
           <Box>
             <Typography variant="subtitle2" color="text.secondary">
@@ -167,6 +167,27 @@ export function PosPage() {
             </Typography>
           </Box>
         </Stack>
+        <TextField
+          select
+          fullWidth
+          label="Category"
+          value={selectedCat}
+          onChange={(e) => setSelectedCat(e.target.value)}
+          sx={{ display: { sm: 'none' }, mb: 2 }}
+        >
+          {tree.map((parent) => [
+            <MenuItem key={parent.id} value={parent.id}>
+              {parent.name}
+            </MenuItem>,
+            ...parent.children
+              .filter((c) => c.active)
+              .map((child) => (
+                <MenuItem key={child.id} value={child.id}>
+                  {parent.name} / {child.name}
+                </MenuItem>
+              )),
+          ])}
+        </TextField>
         <Stack direction={{ xs: 'column', sm: 'row' }} gap={1} sx={{ mb: 2 }}>
           <TextField
             fullWidth
@@ -190,7 +211,7 @@ export function PosPage() {
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(3, 1fr)' },
+            gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(3, 1fr)' },
             gap: 1.25,
           }}
         >

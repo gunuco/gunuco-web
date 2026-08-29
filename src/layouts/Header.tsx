@@ -70,7 +70,7 @@ export function Header({ onMenu }: HeaderProps) {
       }}
     >
       <Toolbar sx={{ gap: 1.5, minHeight: { xs: 64, md: 72 }, width: '100%' }}>
-        <IconButton onClick={onMenu} sx={{ display: { lg: 'none' } }}>
+        <IconButton onClick={onMenu} sx={{ display: { lg: 'none' } }} aria-label="Open menu">
           <MenuRoundedIcon />
         </IconButton>
         <Box sx={{ display: { xs: 'none', md: 'block' }, minWidth: 160, flexShrink: 0 }}>
@@ -104,6 +104,7 @@ export function Header({ onMenu }: HeaderProps) {
             <TextField
               {...params}
               placeholder="Search orders, menu, tickets…"
+              inputProps={{ ...params.inputProps, 'aria-label': 'Search pages' }}
               InputProps={{
                 ...params.InputProps,
                 startAdornment: (
@@ -134,10 +135,10 @@ export function Header({ onMenu }: HeaderProps) {
           <Chip
             size="small"
             label="Live"
-            sx={{ bgcolor: 'success.light', color: 'success.main', fontWeight: 700 }}
+            sx={{ bgcolor: '#E4F6EE', color: '#0F513D', fontWeight: 700 }}
           />
           {isCustomerSupport(user?.role) ? null : (
-            <IconButton onClick={(e) => setNoteEl(e.currentTarget)}>
+            <IconButton onClick={(e) => setNoteEl(e.currentTarget)} aria-label="Orders awaiting acceptance">
               <Badge badgeContent={alerts.length} color="error" max={9}>
                 <NotificationsNoneRoundedIcon />
               </Badge>
@@ -148,6 +149,15 @@ export function Header({ onMenu }: HeaderProps) {
             alignItems="center"
             gap={1}
             onClick={(e) => setAnchor(e.currentTarget)}
+            role="button"
+            tabIndex={0}
+            aria-label="Account menu"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setAnchor(e.currentTarget);
+              }
+            }}
             sx={{
               cursor: 'pointer',
               px: 1,
@@ -188,7 +198,7 @@ export function Header({ onMenu }: HeaderProps) {
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
           transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         >
-          <Stack sx={{ width: 320, p: 2 }} gap={1.25}>
+          <Stack sx={{ width: { xs: 280, sm: 320 }, maxWidth: 'calc(100vw - 32px)', p: 2 }} gap={1.25}>
             <Typography fontWeight={700}>Needs review</Typography>
             {alerts.length === 0 ? (
               <Typography variant="body2" color="text.secondary">

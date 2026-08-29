@@ -1,5 +1,4 @@
 import axios, { type AxiosRequestConfig } from 'axios';
-import { mockAdapter } from '@/mocks/adapter';
 import type { ApiMeta, ApiResponse } from '@/types';
 
 /**
@@ -20,7 +19,10 @@ export const axiosInstance = axios.create({
 });
 
 if (useMock) {
-  axiosInstance.defaults.adapter = mockAdapter;
+  axiosInstance.defaults.adapter = async (config) => {
+    const { mockAdapter } = await import('@/mocks/adapter');
+    return mockAdapter(config);
+  };
 }
 
 axiosInstance.interceptors.request.use((config) => {

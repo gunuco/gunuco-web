@@ -25,7 +25,11 @@ export function CustomerCell({
       placement="top"
       enterDelay={250}
     >
-      <Stack alignItems="center" gap={0.15} sx={{ minWidth: 0, width: '100%', textAlign: 'center', cursor: 'default' }}>
+      <Stack
+        alignItems="center"
+        gap={0}
+        sx={{ minWidth: 0, width: '100%', textAlign: 'center', cursor: 'default', lineHeight: 1.15 }}
+      >
         {name ? <HighlightName value={name} tone="wine" /> : null}
         <Link
           href={`tel:${phone.replace(/\s/g, '')}`}
@@ -35,7 +39,10 @@ export function CustomerCell({
             fontSize: 12,
             fontWeight: 700,
             color: 'text.primary',
-            lineHeight: 1.3,
+            lineHeight: 1.15,
+            m: 0,
+            p: 0,
+            minHeight: 0,
             maxWidth: '100%',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
@@ -46,10 +53,13 @@ export function CustomerCell({
           {phone}
         </Link>
         <Typography
-          variant="caption"
+          component="span"
           color="text.secondary"
           sx={{
-            lineHeight: 1.3,
+            fontSize: 12,
+            lineHeight: 1.15,
+            m: 0,
+            p: 0,
             textAlign: 'center',
             maxWidth: '100%',
             overflow: 'hidden',

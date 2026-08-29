@@ -21,10 +21,11 @@ import {
   Typography,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { AnimatePresence, motion } from 'framer-motion';
 import { useState, type ElementType } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { GunucoMark } from '@/components/brand/GunucoMark';
+import { PageFade } from '@/components/ui/PageFade';
+import { SkipLink } from '@/components/ui/SkipLink';
 import { ROLE_LABELS } from '@/constants/roles';
 import { useAuthStore } from '@/store/authStore';
 import { useUiStore } from '@/store/uiStore';
@@ -62,7 +63,7 @@ export function SupportLayout() {
     <Stack sx={{ height: '100%', color: brand.cream }}>
       <Box sx={{ px: 2.25, py: 2.25, borderBottom: `1px solid ${alpha(brand.gold, 0.16)}` }}>
         <GunucoMark size={40} withWordmark inverted />
-        <Typography sx={{ mt: 1, fontSize: 11, fontWeight: 800, letterSpacing: '0.14em', color: brand.gold }}>
+        <Typography sx={{ mt: 1, fontSize: 11, fontWeight: 800, letterSpacing: '0.14em', color: brand.goldLight }}>
           SUPPORT DESK{subdomain ? ' · SUBDOMAIN' : ''}
         </Typography>
       </Box>
@@ -133,7 +134,8 @@ export function SupportLayout() {
   );
 
   return (
-    <Box sx={{ minHeight: '100vh' }}>
+    <Box sx={{ minHeight: '100vh', overflowX: 'clip' }}>
+      <SkipLink />
       <Drawer
         variant="temporary"
         open={mobileOpen}
@@ -159,7 +161,11 @@ export function SupportLayout() {
         }}
       >
         <Toolbar sx={{ gap: 1.5, minHeight: { xs: 64, md: 72 } }}>
-          <IconButton onClick={() => setMobileOpen(true)} sx={{ display: { lg: 'none' } }}>
+          <IconButton
+            onClick={() => setMobileOpen(true)}
+            sx={{ display: { lg: 'none' } }}
+            aria-label="Open menu"
+          >
             <MenuRoundedIcon />
           </IconButton>
           <Box>
@@ -184,28 +190,23 @@ export function SupportLayout() {
         </Toolbar>
       </AppBar>
       <Box
+        id="main-content"
         component="main"
+        tabIndex={-1}
         sx={{
           ml: { lg: `${WIDTH}px` },
-          px: { xs: 2, md: 3 },
+          px: { xs: 1.5, sm: 2, md: 3 },
           pt: { xs: 1.25, md: 1.5 },
           pb: { xs: 2, md: 2.5 },
           width: { lg: `calc(100% - ${WIDTH}px)` },
           maxWidth: '100%',
           boxSizing: 'border-box',
+          minWidth: 0,
         }}
       >
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={location.pathname}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 8 }}
-            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <Outlet />
-          </motion.div>
-        </AnimatePresence>
+        <PageFade>
+          <Outlet />
+        </PageFade>
       </Box>
       <Snackbar
         open={Boolean(toast)}

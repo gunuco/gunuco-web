@@ -72,7 +72,7 @@ export function MenuProductsTab({ categoryId = '' }: { categoryId?: string }) {
                 '&:hover': canEdit ? { borderColor: brand.wine, bgcolor: alpha(brand.wine, 0.03) } : undefined,
               }}
             >
-              <Stack direction="row" gap={1.5} alignItems="center">
+              <Stack direction={{ xs: 'column', sm: 'row' }} gap={1.5} alignItems="center">
                 <Box
                   sx={{
                     width: 64,

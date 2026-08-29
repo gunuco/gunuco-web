@@ -15,7 +15,7 @@ export function AppModal({ open, title, onClose, children, maxWidth = 'sm' }: Ap
     <Dialog open={open} onClose={onClose} maxWidth={maxWidth} fullWidth>
       <DialogTitle sx={{ pr: 6 }}>
         {title}
-        <IconButton onClick={onClose} sx={{ position: 'absolute', right: 12, top: 12 }} size="small">
+        <IconButton onClick={onClose} sx={{ position: 'absolute', right: 12, top: 12 }} size="small" aria-label="Close">
           <CloseRoundedIcon />
         </IconButton>
       </DialogTitle>

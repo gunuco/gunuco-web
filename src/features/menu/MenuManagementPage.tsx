@@ -53,7 +53,7 @@ export function MenuManagementPage() {
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: showTree ? { xs: '1fr', md: '220px minmax(0,1fr)' } : 'minmax(0,1fr)',
+          gridTemplateColumns: showTree ? { xs: '1fr', sm: 'minmax(12%, 18%) minmax(0,1fr)' } : 'minmax(0,1fr)',
           gap: 2,
           minHeight: 480,
         }}

@@ -36,7 +36,20 @@ export function FilterBar({
         bgcolor: tableSurfaces.search,
         border: `1px solid ${brand.line}`,
         borderBottom: connected ? 'none' : undefined,
-        overflowX: singleRow ? 'auto' : undefined,
+        overflowX: singleRow ? 'auto' : 'visible',
+        width: '100%',
+        minWidth: 0,
+        WebkitOverflowScrolling: singleRow ? 'touch' : undefined,
+        '& .MuiTextField-root': singleRow
+          ? { minWidth: 140, flex: '0 0 auto' }
+          : {
+              width: { xs: '100%', sm: 'auto' },
+              minWidth: { xs: '100%', sm: 140 },
+              flex: { xs: '1 1 100%', sm: '1 1 140px' },
+            },
+        '& > .MuiButton-root': singleRow
+          ? { flex: '0 0 auto' }
+          : { width: { xs: '100%', sm: 'auto' } },
         '& .MuiInputLabel-root': {
           color: brand.muted,
           fontWeight: 700,

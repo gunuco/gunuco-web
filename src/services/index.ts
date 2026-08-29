@@ -1,6 +1,6 @@
 import { apiClient } from '@/services/apiClient';
 import { ENDPOINTS } from '@/services/endpoints';
-import type { Addon, AuthUser, CustomCakeRequest, Location, Order } from '@/types';
+import type { Addon, CustomCakeRequest, Location, Order } from '@/types';
 
 export const addonService = {
   list: async () => (await apiClient.get<Addon[]>(ENDPOINTS.addons)).data,
@@ -34,10 +34,7 @@ export const reportService = {
     ).data,
 };
 
-export const authService = {
-  login: async (email: string, password: string) =>
-    (await apiClient.post<AuthUser>(ENDPOINTS.auth.login, { email, password })).data,
-};
+export { authService } from '@/services/authService';
 
 export { deliveryService } from '@/services/deliveryService';
 export { orderService } from '@/services/orderService';

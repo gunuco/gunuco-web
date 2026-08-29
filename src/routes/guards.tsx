@@ -1,8 +1,13 @@
+import { lazy, Suspense } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { ALL_ROLES } from '@/constants/roles';
 import { useAuthStore } from '@/store/authStore';
 import type { Role } from '@/types';
 import { homePathForRole } from '@/utils/permissions';
+
+const QueryProvider = lazy(() =>
+  import('@/app/query-provider').then((m) => ({ default: m.QueryProvider })),
+);
 
 function isKnownRole(role: unknown): role is Role {
   return ALL_ROLES.includes(role as Role);
@@ -16,7 +21,13 @@ export function ProtectedRoute() {
     return <Navigate to="/login" replace />;
   }
   if (!user) return <Navigate to="/login" replace />;
-  return <Outlet />;
+  return (
+    <Suspense fallback={null}>
+      <QueryProvider>
+        <Outlet />
+      </QueryProvider>
+    </Suspense>
+  );
 }
 
 export function GuestRoute() {

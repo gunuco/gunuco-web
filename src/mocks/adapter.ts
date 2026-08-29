@@ -46,7 +46,9 @@ function fail(
   };
 }
 
-function delay(): Promise<void> {
+function delay(config: InternalAxiosRequestConfig): Promise<void> {
+  const method = (config.method ?? 'get').toLowerCase();
+  if (method === 'get') return Promise.resolve();
   const ms = 500 + Math.floor(Math.random() * 500);
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -546,7 +548,7 @@ async function route(config: InternalAxiosRequestConfig): Promise<AxiosResponse>
 }
 
 export const mockAdapter: AxiosAdapter = async (config) => {
-  await delay();
+  await delay(config);
   const response = await route(config);
   if (response.status >= 400) {
     const error = Object.assign(

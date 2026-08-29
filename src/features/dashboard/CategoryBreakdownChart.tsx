@@ -26,7 +26,7 @@ export function CategoryBreakdownChart({
         {loading ? (
           <Skeleton variant="rounded" height={260} />
         ) : (
-          <Stack direction="row" alignItems="center" gap={1} sx={{ height: 270 }}>
+          <Stack direction="row" alignItems="center" gap={1} sx={{ height: 270, flexWrap: 'wrap' }}>
             <Box sx={{ width: 180, height: 180 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>

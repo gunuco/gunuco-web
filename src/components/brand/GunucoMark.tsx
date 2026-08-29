@@ -1,21 +1,30 @@
 import { Box, Stack, Typography } from '@mui/material';
-import logo from '@/assets/logo.png';
 import { brand } from '@/theme/colors';
 
 interface GunucoMarkProps {
   size?: number;
   withWordmark?: boolean;
   inverted?: boolean;
+  priority?: boolean;
 }
 
 /** Wordmark + giraffe mark. */
-export function GunucoMark({ size = 40, withWordmark = false, inverted = false }: GunucoMarkProps) {
+export function GunucoMark({
+  size = 40,
+  withWordmark = false,
+  inverted = false,
+  priority = false,
+}: GunucoMarkProps) {
   return (
     <Stack direction="row" alignItems="center" gap={1.25} sx={{ minWidth: 0 }}>
       <Box
         component="img"
-        src={logo}
-        alt="GUNUCO"
+        src="/favicon.svg"
+        alt={withWordmark ? '' : 'GUNUCO'}
+        width={size}
+        height={size}
+        decoding="async"
+        fetchPriority={priority ? 'high' : 'low'}
         sx={{
           width: size,
           height: size,
@@ -32,7 +41,7 @@ export function GunucoMark({ size = 40, withWordmark = false, inverted = false }
         <Box sx={{ minWidth: 0 }}>
           <Typography
             sx={{
-              fontFamily: '"Fraunces", serif',
+              fontFamily: '"Fraunces Variable", "Fraunces", serif',
               fontWeight: 650,
               letterSpacing: '-0.04em',
               fontSize: size > 36 ? 22 : 18,
@@ -48,7 +57,7 @@ export function GunucoMark({ size = 40, withWordmark = false, inverted = false }
               fontSize: 10,
               fontWeight: 700,
               letterSpacing: '0.16em',
-              color: inverted ? 'rgba(247,241,234,0.55)' : brand.goldDark,
+              color: inverted ? 'rgba(247,241,234,0.88)' : brand.goldDark,
             }}
           >
             ATELIER

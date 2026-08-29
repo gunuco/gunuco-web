@@ -1,11 +1,17 @@
+import { lazy, Suspense } from 'react';
 import { Grid, Stack } from '@mui/material';
 import { KpiCard } from '@/components/ui/KpiCard';
 import { PageHeader } from '@/components/ui/PageHeader';
-import { CategoryBreakdownChart } from '@/features/dashboard/CategoryBreakdownChart';
-import { OrdersTrendChart } from '@/features/dashboard/OrdersTrendChart';
 import { useDashboard } from '@/hooks/useDashboard';
 import { useReports } from '@/hooks/useResources';
 import { formatCurrency, formatNumber } from '@/utils/format';
+
+const OrdersTrendChart = lazy(() =>
+  import('@/features/dashboard/OrdersTrendChart').then((m) => ({ default: m.OrdersTrendChart })),
+);
+const CategoryBreakdownChart = lazy(() =>
+  import('@/features/dashboard/CategoryBreakdownChart').then((m) => ({ default: m.CategoryBreakdownChart })),
+);
 
 export function ReportsPage() {
   const summary = useReports();
@@ -32,10 +38,14 @@ export function ReportsPage() {
           <KpiCard label="Delivered" value={formatNumber(summary.data?.delivered ?? 0)} loading={summary.isLoading} />
         </Grid>
         <Grid item xs={12} md={8}>
-          <OrdersTrendChart data={dashboard.data?.trend} loading={dashboard.isLoading} />
+          <Suspense fallback={null}>
+            <OrdersTrendChart data={dashboard.data?.trend} loading={dashboard.isLoading} />
+          </Suspense>
         </Grid>
         <Grid item xs={12} md={4}>
-          <CategoryBreakdownChart data={dashboard.data?.categoryBreakdown} loading={dashboard.isLoading} />
+          <Suspense fallback={null}>
+            <CategoryBreakdownChart data={dashboard.data?.categoryBreakdown} loading={dashboard.isLoading} />
+          </Suspense>
         </Grid>
       </Grid>
     </Stack>

@@ -12,12 +12,12 @@ export const brand = {
   espressoMid: '#7A1A38',
   gold: '#C4A574',
   goldLight: '#E6D3B8',
-  goldDark: '#8F7348',
+  goldDark: '#7A5C30',
   cream: '#F3F0EC',
   creamPaper: '#FFFFFF',
   wash: '#F7F1F3',
   ink: '#4A3036',
-  muted: '#7A6E6A',
+  muted: '#5F5552',
   line: '#E6E0DA',
 } as const;
 

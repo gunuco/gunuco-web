@@ -66,7 +66,7 @@ export function SupportTicketsPage() {
   };
 
   return (
-    <Stack gap={1.5} sx={{ height: { md: 'calc(100vh - 108px)' }, minHeight: 560 }}>
+    <Stack gap={1.5} sx={{ height: { md: 'calc(100vh - 108px)' }, minHeight: { xs: 480, md: 560 } }}>
       <PageHeader
         highlightTitle
         eyebrow="Support desk"
@@ -126,7 +126,7 @@ export function SupportTicketsPage() {
             placeholder="Search ticket, order, or name"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            sx={{ ml: { sm: 'auto' }, minWidth: { sm: 240 } }}
+            sx={{ ml: { sm: 'auto' }, width: { xs: '100%', sm: 'auto' }, minWidth: { sm: 240 } }}
           />
         </Stack>
         <Stack direction={{ xs: 'column', md: 'row' }} sx={{ flex: 1, minHeight: 0 }}>

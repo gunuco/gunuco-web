@@ -274,7 +274,7 @@ export function ProductionQueuePage() {
           const cards = filtered.filter((order) => order.status === col);
           const tone = COLUMN_TONE[col];
           return (
-            <Grid item xs={12} md={4} key={col}>
+            <Grid item xs={12} sm={6} lg={4} key={col}>
               <Stack
                 sx={{
                   p: 1.5,

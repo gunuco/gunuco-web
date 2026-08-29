@@ -75,8 +75,7 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
                   fontSize: 10,
                   fontWeight: 800,
                   letterSpacing: '0.16em',
-                  color: brand.gold,
-                  opacity: 0.82,
+                  color: brand.goldLight,
                 }}
               >
                 {NAV_SECTION_LABELS[section as NavSection]}

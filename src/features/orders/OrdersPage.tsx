@@ -51,7 +51,6 @@ export function OrdersPage() {
       {
         id: 'customer',
         label: 'Customer',
-        align: 'left',
         render: (row) => <HighlightName value={row.customerName} tone="wine" />,
       },
       {
@@ -80,11 +79,15 @@ export function OrdersPage() {
       {
         id: 'total',
         label: 'Total',
+        align: 'left',
+        width: 92,
         render: (row) => <TotalCell amount={row.total} paid={row.paymentStatus === 'completed'} />,
       },
       {
         id: 'pay',
         label: 'Payment',
+        align: 'left',
+        width: 128,
         render: (row) => {
           const paid = row.paymentStatus === 'completed';
           return (
@@ -98,19 +101,19 @@ export function OrdersPage() {
       {
         id: 'actions',
         label: '',
-        align: 'right',
-        minWidth: 110 ,
+        width: 184,
+        noWrap: true,
         render: (row) => {
           const rowBusy = isPendingForId(accept, row.id) || isPendingForId(reject, row.id);
           return (
-          <Stack direction="row" gap={0.4} justifyContent="flex-end" flexWrap="nowrap" onClick={(e) => e.stopPropagation()}>
+          <Stack direction="row" gap={0.5} justifyContent="center" flexWrap="nowrap" onClick={(e) => e.stopPropagation()}>
             <Button
               size="small"
               variant={canEdit && !rowBusy ? 'contained' : 'text'}
               className={canEdit && !rowBusy ? 'accept-ring' : undefined}
               disabled={!canEdit || rowBusy}
               onClick={() => accept.mutate(row.id)}
-              sx={{ minHeight: 28, px: 1.2, fontSize: 12 }}
+              sx={{ minHeight: 32, px: 1.25, fontSize: 12, flexShrink: 0, whiteSpace: 'nowrap' }}
             >
               Accept
             </Button>
@@ -125,7 +128,7 @@ export function OrdersPage() {
                 );
                 if (ok) reject.mutate({ id: row.id, reason: 'Rejected from admin' });
               }}
-              sx={{ minHeight: 28, px: 1, fontSize: 12 }}
+              sx={{ minHeight: 32, px: 1.25, fontSize: 12, flexShrink: 0, whiteSpace: 'nowrap' }}
             >
               Reject
             </Button>
@@ -248,6 +251,7 @@ export function OrdersPage() {
           <DataTable
             connected
             headerFit
+            minWidth={1120}
             columns={columns}
             rows={rows}
             rowKey={(r) => r.id}

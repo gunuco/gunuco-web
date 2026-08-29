@@ -41,6 +41,8 @@ interface DataTableProps<T> {
   headerColor?: string;
   /** Size columns to each header; keep a fixed gap between names. */
   headerFit?: boolean;
+  /** Keep this layout width; smaller viewports scroll horizontally by the difference. */
+  minWidth?: number;
 }
 
 export function DataTable<T>({
@@ -59,12 +61,16 @@ export function DataTable<T>({
   bodyColor,
   headerColor,
   headerFit = false,
+  minWidth,
 }: DataTableProps<T>) {
   const skeletonRows = typeof loading === 'number' ? loading : 5;
   const isLoading = Boolean(loading);
-  const equalWidth = `${100 / Math.max(columns.length, 1)}%`;
-  const colGap = 2;
+  const colGap = 1.25;
   const displayColumns = columns;
+  const hasExplicitWidth = displayColumns.some((col) => col.width != null);
+  const equalWidth = hasExplicitWidth ? undefined : `${100 / Math.max(displayColumns.length, 1)}%`;
+  const colMinWidth = (col: Column<T>) =>
+    col.minWidth ?? (typeof col.width === 'number' ? col.width : undefined);
 
   return (
     <Paper
@@ -74,16 +80,26 @@ export function DataTable<T>({
         borderRadius: connected ? '0 0 12px 12px' : 1.5,
         bgcolor: bodyColor ?? brand.creamPaper,
         width: '100%',
+        maxWidth: '100%',
+        minWidth: 0,
         boxShadow: connected ? 'none' : undefined,
         border: `1px solid ${brand.line}`,
         borderTop: connected ? 'none' : undefined,
       }}
     >
-      <TableContainer sx={{ overflowX: 'auto' }}>
+      <TableContainer
+        sx={{
+          maxWidth: '100%',
+          overflowX: 'auto',
+          overflowY: 'clip',
+          WebkitOverflowScrolling: 'touch',
+        }}
+      >
         <Table
           size="small"
           sx={{
             width: '100%',
+            minWidth: minWidth,
             tableLayout: 'fixed',
             borderCollapse: 'separate',
             borderSpacing: 0,
@@ -105,7 +121,7 @@ export function DataTable<T>({
                     bgcolor: headerColor ?? brand.wine,
                     borderBottom: `2px solid ${brand.gold}`,
                     width: col.width ?? equalWidth,
-                    minWidth: col.minWidth,
+                    minWidth: colMinWidth(col),
                     py: 1.35,
                     fontSize: 15,
                     letterSpacing: '0.06em',
@@ -127,7 +143,7 @@ export function DataTable<T>({
                       <TableCell
                         key={col.id}
                         align={col.align ?? 'center'}
-                        sx={{ py: 1.5, width: col.width ?? equalWidth }}
+                        sx={{ py: 1.5, minWidth: colMinWidth(col), width: col.width ?? equalWidth }}
                       >
                         <Skeleton />
                       </TableCell>
@@ -153,10 +169,12 @@ export function DataTable<T>({
                       sx={{
                         py: 1.5,
                         width: col.width ?? equalWidth,
+                        minWidth: colMinWidth(col),
                         borderColor: brand.line,
-                        whiteSpace: 'normal',
+                        whiteSpace: col.noWrap ? 'nowrap' : 'normal',
                         textAlign: col.align ?? 'center',
                         verticalAlign: 'middle',
+                        overflow: col.noWrap ? 'visible' : 'hidden',
                       }}
                     >
                       <Box
@@ -166,8 +184,10 @@ export function DataTable<T>({
                             col.align === 'left' ? 'flex-start' : col.align === 'right' ? 'flex-end' : 'center',
                           alignItems: 'center',
                           width: '100%',
-                          textAlign: col.align ?? 'center',
+                          maxWidth: '100%',
                           minWidth: 0,
+                          overflow: col.noWrap ? 'visible' : 'hidden',
+                          textAlign: col.align ?? 'center',
                         }}
                       >
                         {col.render(row)}
@@ -195,6 +215,10 @@ export function DataTable<T>({
           onPageChange={(_e, next) => onPageChange(next)}
           onRowsPerPageChange={(e) => onPageSizeChange?.(Number(e.target.value))}
           rowsPerPageOptions={[5, 10, 25]}
+          sx={{
+            overflow: 'hidden',
+            '& .MuiTablePagination-toolbar': { flexWrap: 'wrap', minHeight: 52, pl: 1.5 },
+          }}
         />
       ) : null}
     </Paper>

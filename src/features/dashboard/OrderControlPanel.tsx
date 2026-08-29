@@ -110,7 +110,7 @@ export function OrderControlPanel({ settings, categories, loading }: Props) {
                 alignItems={{ sm: 'center' }}
                 sx={{ p: 1.5, borderRadius: 2.5, bgcolor: 'background.default' }}
               >
-                <Box sx={{ flex: 1, minWidth: 180 }}>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Typography fontWeight={800} fontSize={14}>
                     {cat.name}
                   </Typography>
@@ -165,7 +165,7 @@ export function OrderControlPanel({ settings, categories, loading }: Props) {
                       ],
                     })
                   }
-                  sx={{ minWidth: 150 }}
+                  sx={{ minWidth: { xs: '100%', sm: 150 } }}
                 >
                   <MenuItem value="auto">Automatic</MenuItem>
                   <MenuItem value="manual">Manual</MenuItem>
@@ -187,7 +187,7 @@ export function OrderControlPanel({ settings, categories, loading }: Props) {
                       ],
                     })
                   }
-                  sx={{ width: 130 }}
+                  sx={{ width: { xs: '100%', sm: 130 } }}
                 />
               </Stack>
             );

@@ -31,21 +31,21 @@ export function PageHeader({
 
   return (
     <Stack
-      direction="row"
+      direction={{ xs: 'column', sm: 'row' }}
       justifyContent="space-between"
-      alignItems="baseline"
+      alignItems={{ xs: 'stretch', sm: 'baseline' }}
       gap={1.5}
       sx={{ mb: 1 }}
     >
       <Stack
-        direction="row"
-        alignItems="baseline"
-        gap={1.25}
-        sx={{ minWidth: 0, flex: 1, flexWrap: 'nowrap' }}
+        direction={{ xs: 'column', md: 'row' }}
+        alignItems={{ md: 'baseline' }}
+        gap={{ xs: 0.5, md: 1.25 }}
+        sx={{ minWidth: 0, flex: 1, flexWrap: 'wrap' }}
       >
         <Typography
           variant="h4"
-          noWrap
+          component="h1"
           sx={{
             fontSize: { xs: 22, md: 26 },
             lineHeight: 1.2,
@@ -66,9 +66,8 @@ export function PageHeader({
           <Typography
             variant="body2"
             color="text.secondary"
-            noWrap
             title={detail}
-            sx={{ lineHeight: 1.2, minWidth: 0 }}
+            sx={{ lineHeight: 1.35, minWidth: 0 }}
           >
             {eyebrow ? (
               <Box component="span" sx={{ color: 'secondary.dark', fontWeight: 700 }}>
@@ -81,7 +80,7 @@ export function PageHeader({
         ) : null}
       </Stack>
       {actions ? (
-        <Stack direction="row" gap={1} flexWrap="nowrap" sx={{ flexShrink: 0 }}>
+        <Stack direction="row" gap={1} flexWrap="wrap" sx={{ flexShrink: 0 }}>
           {actions}
         </Stack>
       ) : null}

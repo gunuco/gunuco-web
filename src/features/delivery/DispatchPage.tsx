@@ -175,6 +175,7 @@ export function DispatchPage() {
             onChange={(_e, value: FulfillmentMode | null) => {
               if (value) updateControls.mutate({ deliveryAssignmentMode: value });
             }}
+            sx={{ flexWrap: 'wrap' }}
           >
             <ToggleButton value="auto">Automatic assignment</ToggleButton>
             <ToggleButton value="manual">Manual assignment</ToggleButton>

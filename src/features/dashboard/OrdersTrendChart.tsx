@@ -23,7 +23,7 @@ export function OrdersTrendChart({ data, loading }: { data?: TrendPoint[]; loadi
             </Typography>
             <Typography variant="h6">Orders & revenue</Typography>
           </Box>
-          <Stack direction="row" gap={2}>
+          <Stack direction="row" gap={2} flexWrap="wrap">
             <LegendDot color={brand.wine} label="Orders" />
             <LegendDot color={brand.gold} label="Revenue" />
           </Stack>

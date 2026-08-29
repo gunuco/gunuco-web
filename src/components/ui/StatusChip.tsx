@@ -52,11 +52,14 @@ export function StatusChip({ status, label }: StatusChipProps) {
         color: TONE[color].fg,
         fontWeight: 650,
         height: 24,
-        whiteSpace: 'nowrap',
+        maxWidth: '100%',
+        minWidth: 0,
+        flexShrink: 1,
         '& .MuiChip-label': {
           px: 0.75,
           whiteSpace: 'nowrap',
-          overflow: 'visible',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
         },
       }}
     />

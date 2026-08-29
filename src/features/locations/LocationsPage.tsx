@@ -15,7 +15,7 @@ export function LocationsPage() {
       />
       <Stack direction={{ xs: 'column', md: 'row' }} gap={2}>
         {(list.data ?? []).map((loc) => (
-          <Card key={loc.id} sx={{ minWidth: 320 }}>
+          <Card key={loc.id} sx={{ minWidth: 0, width: '100%', maxWidth: { md: 420 } }}>
             <CardContent>
               <Stack direction="row" gap={1} alignItems="center" sx={{ mb: 1 }}>
                 <PlaceRoundedIcon color="primary" />

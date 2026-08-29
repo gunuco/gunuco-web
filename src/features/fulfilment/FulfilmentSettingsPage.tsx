@@ -137,7 +137,7 @@ export function FulfilmentSettingsPage() {
               type="number"
               value={maxDoorstepKm}
               onChange={(e) => useFulfilmentStore.getState().setMaxDoorstepKm(Number(e.target.value) || 0)}
-              sx={{ width: 180 }}
+              sx={{ width: { xs: '100%', sm: 180 } }}
               InputProps={{ endAdornment: <Typography variant="caption">km</Typography> }}
             />
           </Stack>
@@ -168,7 +168,7 @@ export function FulfilmentSettingsPage() {
               onChange={(e) =>
                 useFulfilmentStore.getState().setStorePin(Number(e.target.value), store.lng)
               }
-              sx={{ width: 140 }}
+              sx={{ width: { xs: '100%', sm: 140 } }}
             />
             <TextField
               size="small"
@@ -178,7 +178,7 @@ export function FulfilmentSettingsPage() {
               onChange={(e) =>
                 useFulfilmentStore.getState().setStorePin(store.lat, Number(e.target.value))
               }
-              sx={{ width: 140 }}
+              sx={{ width: { xs: '100%', sm: 140 } }}
             />
           </Stack>
           <CoverageMap
@@ -290,7 +290,7 @@ export function FulfilmentSettingsPage() {
               type="number"
               value={minOrderFreeDelivery}
               onChange={(e) => useFulfilmentStore.getState().setMinOrderFreeDelivery(Number(e.target.value) || 0)}
-              sx={{ width: 180 }}
+              sx={{ width: { xs: '100%', sm: 180 } }}
               helperText="0 = no threshold"
             />
             <TextField
@@ -298,14 +298,14 @@ export function FulfilmentSettingsPage() {
               type="number"
               value={peakSurchargePct}
               onChange={(e) => useFulfilmentStore.getState().setPeakSurchargePct(Number(e.target.value) || 0)}
-              sx={{ width: 160 }}
+              sx={{ width: { xs: '100%', sm: 160 } }}
             />
             <TextField
               label="Pickup buffer (min)"
               type="number"
               value={pickupBufferMins}
               onChange={(e) => useFulfilmentStore.getState().setPickupBufferMins(Number(e.target.value) || 0)}
-              sx={{ width: 180 }}
+              sx={{ width: { xs: '100%', sm: 180 } }}
             />
             <TextField
               label="Same-day cutoff"
@@ -313,7 +313,7 @@ export function FulfilmentSettingsPage() {
               value={sameDayCutoff}
               onChange={(e) => useFulfilmentStore.getState().setSameDayCutoff(e.target.value)}
               InputLabelProps={{ shrink: true }}
-              sx={{ width: 180 }}
+              sx={{ width: { xs: '100%', sm: 180 } }}
             />
           </Stack>
         </CardContent>

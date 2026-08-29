@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
 import CakeRoundedIcon from '@mui/icons-material/CakeRounded';
 import LocalShippingRoundedIcon from '@mui/icons-material/LocalShippingRounded';
@@ -7,20 +8,24 @@ import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
 import FavoriteBorderRoundedIcon from '@mui/icons-material/FavoriteBorderRounded';
 import HourglassBottomRoundedIcon from '@mui/icons-material/HourglassBottomRounded';
 import { Button, Grid, Stack } from '@mui/material';
-import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { KpiCard } from '@/components/ui/KpiCard';
 import { ErrorState } from '@/components/ui/Feedback';
 import { PageHeader } from '@/components/ui/PageHeader';
-import { CategoryBreakdownChart } from '@/features/dashboard/CategoryBreakdownChart';
 import { OrderControlPanel } from '@/features/dashboard/OrderControlPanel';
-import { OrdersTrendChart } from '@/features/dashboard/OrdersTrendChart';
 import { RecentOrdersTable } from '@/features/dashboard/RecentOrdersTable';
 import { useCategories } from '@/hooks/useCategories';
 import { useDashboard } from '@/hooks/useDashboard';
 import { brand } from '@/theme/colors';
 import { useAuthStore } from '@/store/authStore';
 import { formatCurrency, formatNumber } from '@/utils/format';
+
+const OrdersTrendChart = lazy(() =>
+  import('@/features/dashboard/OrdersTrendChart').then((m) => ({ default: m.OrdersTrendChart })),
+);
+const CategoryBreakdownChart = lazy(() =>
+  import('@/features/dashboard/CategoryBreakdownChart').then((m) => ({ default: m.CategoryBreakdownChart })),
+);
 
 function greeting(name: string) {
   const hour = new Date().getHours();
@@ -98,11 +103,9 @@ export function DashboardPage() {
             icon: <LocalShippingRoundedIcon fontSize="small" />,
             accent: '#3B6B8C',
           },
-        ].map((card, i) => (
+        ].map((card) => (
           <Grid item xs={12} sm={6} lg={3} key={card.label}>
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-              <KpiCard {...card} loading={dashboard.isLoading} />
-            </motion.div>
+            <KpiCard {...card} loading={dashboard.isLoading} />
           </Grid>
         ))}
       </Grid>
@@ -122,10 +125,14 @@ export function DashboardPage() {
       </Grid>
       <Grid container spacing={2}>
         <Grid item xs={12} lg={8}>
-          <OrdersTrendChart data={data?.trend} loading={dashboard.isLoading} />
+          <Suspense fallback={null}>
+            <OrdersTrendChart data={data?.trend} loading={dashboard.isLoading} />
+          </Suspense>
         </Grid>
         <Grid item xs={12} lg={4}>
-          <CategoryBreakdownChart data={data?.categoryBreakdown} loading={dashboard.isLoading} />
+          <Suspense fallback={null}>
+            <CategoryBreakdownChart data={data?.categoryBreakdown} loading={dashboard.isLoading} />
+          </Suspense>
         </Grid>
       </Grid>
       <OrderControlPanel
