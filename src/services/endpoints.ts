@@ -24,6 +24,13 @@ export const ENDPOINTS = {
   locations: '/locations',
   customCakes: '/custom-cakes',
   customCake: (id: string) => `/custom-cakes/${id}`,
+  offers: '/offers',
+  offer: (id: string) => `/offers/${id}`,
+  feedback: '/feedback',
+  feedbackApprove: (id: string) => `/feedback/${id}/approve`,
+  feedbackReject: (id: string) => `/feedback/${id}/reject`,
+  testimonials: '/testimonials',
+  testimonial: (id: string) => `/testimonials/${id}`,
   posCheckout: '/pos/checkout',
   reportsSummary: '/reports/summary',
 } as const;

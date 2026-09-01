@@ -11,6 +11,7 @@ import { ErrorState } from '@/components/ui/Feedback';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { StatusChip } from '@/components/ui/StatusChip';
 import { OrderIdCell } from '@/components/orders/OrderIdCell';
+import { HighlightName } from '@/components/orders/HighlightName';
 import { DELIVERY_STATE_LABELS, ORDER_STATUS_LABELS, RIDER_STATUS_LABELS } from '@/constants/status';
 import { RiderDetailsDialog } from '@/features/delivery/RiderDetailsDialog';
 import { RiderGpsDialog } from '@/features/delivery/RiderGpsDialog';
@@ -113,16 +114,19 @@ export function DispatchPage() {
   const liveColumns: Column<Order>[] = [
     {
       id: 'order',
-      label: 'Order',
+      label: 'Order ID',
       minWidth: 160,
       render: (row) => <OrderIdCell orderNumber={row.orderNumber} placedAt={row.createdAt} />,
     },
-    { id: 'customer', label: 'Customer', render: (row) => row.customerName },
+    { id: 'customer', label: 'Customer', render: (row) => <HighlightName value={row.customerName} tone="wine" /> },
     { id: 'address', label: 'Drop', render: (row) => row.customerAddress },
     {
       id: 'rider',
       label: 'Rider',
-      render: (row) => (riders.data ?? []).find((r) => r.id === row.riderId)?.name ?? '—',
+      render: (row) => {
+        const name = (riders.data ?? []).find((r) => r.id === row.riderId)?.name;
+        return name ? <HighlightName value={name} tone="wine" /> : '—';
+      },
     },
     {
       id: 'track',

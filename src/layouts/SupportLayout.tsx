@@ -134,7 +134,7 @@ export function SupportLayout() {
   );
 
   return (
-    <Box sx={{ minHeight: '100vh', overflowX: 'clip' }}>
+    <Box sx={{ minHeight: '100vh', overflowX: 'hidden' }}>
       <SkipLink />
       <Drawer
         variant="temporary"

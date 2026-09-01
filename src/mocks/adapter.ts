@@ -7,12 +7,16 @@ import type {
   ApiMeta,
   ApiResponse,
   Category,
+  CustomCakeRequest,
   DashboardPayload,
+  FeedbackItem,
+  Offer,
   FulfillmentMode,
   Order,
   OrderFilters,
   OrderStatus,
   Product,
+  Testimonial,
 } from '@/types';
 import type { AxiosAdapter, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 
@@ -91,6 +95,135 @@ function match(path: string, pattern: string): Record<string, string> | null {
     else if (a[i] !== b[i]) return null;
   }
   return params;
+}
+
+function asStringArray(value: unknown, fallback: string[]): string[] {
+  return Array.isArray(value) ? value.map(String) : fallback;
+}
+
+function couponClash(code: string, kind: Offer['kind'], excludeId?: string): string | null {
+  if (kind !== 'coupon' || !code) return null;
+  const taken = db.offers.some(
+    (row) => row.kind === 'coupon' && row.id !== excludeId && row.code.toUpperCase() === code.toUpperCase(),
+  );
+  return taken ? 'That coupon code is already in use' : null;
+}
+
+function scopedTargets(
+  appliesTo: Offer['appliesTo'],
+  categoryIds: string[],
+  productIds: string[],
+): Pick<Offer, 'categoryIds' | 'productIds'> {
+  if (appliesTo === 'all') return { categoryIds: [], productIds: [] };
+  if (appliesTo === 'category') return { categoryIds, productIds: [] };
+  return { categoryIds: [], productIds };
+}
+
+function buildOffer(body: Record<string, unknown>): Offer {
+  const kind: Offer['kind'] = body.kind === 'coupon' ? 'coupon' : 'automatic';
+  const reward: Offer['reward'] = body.reward === 'flat' ? 'flat' : 'percent';
+  const appliesTo: Offer['appliesTo'] =
+    body.appliesTo === 'category' || body.appliesTo === 'product' ? body.appliesTo : 'all';
+  return {
+    id: nextId('off'),
+    name: String(body.name ?? '').trim(),
+    description: String(body.description ?? '').trim(),
+    kind,
+    code: kind === 'coupon' ? String(body.code ?? '').trim().toUpperCase() : '',
+    reward,
+    value: Number(body.value ?? 0),
+    minOrderAmount: Math.max(0, Number(body.minOrderAmount ?? 0)),
+    maxDiscount:
+      reward === 'percent' && body.maxDiscount != null && body.maxDiscount !== ''
+        ? Number(body.maxDiscount)
+        : null,
+    appliesTo,
+    ...scopedTargets(appliesTo, asStringArray(body.categoryIds, []), asStringArray(body.productIds, [])),
+    startsAt: String(body.startsAt ?? nowIso()),
+    endsAt: String(body.endsAt ?? nowIso()),
+    usageLimit: body.usageLimit == null || body.usageLimit === '' ? null : Number(body.usageLimit),
+    used: 0,
+    active: body.active !== false,
+  };
+}
+
+function buildOfferPatch(body: Record<string, unknown>, found: Offer): Partial<Offer> {
+  const kind = (body.kind ?? found.kind) as Offer['kind'];
+  const reward = (body.reward ?? found.reward) as Offer['reward'];
+  const appliesTo = (body.appliesTo ?? found.appliesTo) as Offer['appliesTo'];
+  const maxDiscount =
+    body.maxDiscount === undefined
+      ? found.maxDiscount
+      : body.maxDiscount == null || body.maxDiscount === ''
+        ? null
+        : Number(body.maxDiscount);
+  return {
+    name: body.name !== undefined ? String(body.name).trim() : found.name,
+    description: body.description !== undefined ? String(body.description) : found.description,
+    kind,
+    code: kind === 'coupon' ? String(body.code ?? found.code).trim().toUpperCase() : '',
+    reward,
+    value: body.value !== undefined ? Number(body.value) : found.value,
+    minOrderAmount:
+      body.minOrderAmount !== undefined ? Math.max(0, Number(body.minOrderAmount)) : found.minOrderAmount,
+    maxDiscount: reward === 'percent' ? maxDiscount : null,
+    appliesTo,
+    ...scopedTargets(
+      appliesTo,
+      asStringArray(body.categoryIds, found.categoryIds),
+      asStringArray(body.productIds, found.productIds),
+    ),
+    startsAt: body.startsAt !== undefined ? String(body.startsAt) : found.startsAt,
+    endsAt: body.endsAt !== undefined ? String(body.endsAt) : found.endsAt,
+    usageLimit:
+      body.usageLimit === undefined
+        ? found.usageLimit
+        : body.usageLimit == null || body.usageLimit === ''
+          ? null
+          : Number(body.usageLimit),
+    active: body.active !== undefined ? Boolean(body.active) : found.active,
+  };
+}
+
+function publicQuoteName(fullName: string): string {
+  const parts = String(fullName).trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return 'Guest';
+  if (parts.length === 1) return parts[0];
+  return `${parts[0]} ${parts[parts.length - 1].charAt(0).toUpperCase()}.`;
+}
+
+function hueFrom(id: string): number {
+  let n = 0;
+  for (const ch of id) n = (n + ch.charCodeAt(0) * 13) % 360;
+  return n;
+}
+
+function upsertTestimonialFromFeedback(item: FeedbackItem) {
+  if (!item.consent) return;
+  const existing = db.testimonials.find((row) => row.sourceFeedbackId === item.id);
+  if (existing) {
+    existing.quote = item.message;
+    existing.active = true;
+    return existing;
+  }
+  const created: Testimonial = {
+    id: nextId('tm'),
+    displayName: publicQuoteName(item.customerName),
+    quote: item.message,
+    imageHue: hueFrom(item.id),
+    channels: ['app', 'website'],
+    displayOrder: db.testimonials.reduce((max, row) => Math.max(max, row.displayOrder), 0) + 1,
+    active: true,
+    sourceFeedbackId: item.id,
+  };
+  db.testimonials.push(created);
+  return created;
+}
+
+function hideTestimonialsForFeedback(feedbackId: string) {
+  db.testimonials.forEach((row) => {
+    if (row.sourceFeedbackId === feedbackId) row.active = false;
+  });
 }
 
 function trendFromOrders() {
@@ -437,11 +570,14 @@ async function route(config: InternalAxiosRequestConfig): Promise<AxiosResponse>
       subcategoryId: body.subcategoryId,
       description: body.description ?? '',
       imageHue: body.imageHue ?? Math.floor(Math.random() * 360),
-      imageUrl: body.imageUrl,
+      imageUrl: body.imageUrl ?? body.imageUrls?.[0],
+      imageUrls: body.imageUrls ?? (body.imageUrl ? [body.imageUrl] : []),
       basePrice: body.basePrice,
       active: body.active ?? true,
+      featured: body.featured,
       attributes: body.attributes ?? {},
       priceTiers: body.priceTiers ?? [],
+      customizationEnabled: body.customizationEnabled ?? Boolean(body.customizationGroups?.length),
       customizationGroups: body.customizationGroups ?? [],
       addOnIds: body.addOnIds ?? [],
       tags: body.tags ?? [],
@@ -464,7 +600,9 @@ async function route(config: InternalAxiosRequestConfig): Promise<AxiosResponse>
   if (method === 'post' && match(path, '/addons')) {
     const created: Addon = {
       id: nextId('add'),
-      name: body.name,
+      name: body.title?.trim() || body.name,
+      title: body.title?.trim() || body.name,
+      description: body.description ?? '',
       price: Number(body.price ?? 0),
       active: body.active ?? true,
       applicableCategoryIds: body.applicableCategoryIds ?? [],
@@ -476,7 +614,12 @@ async function route(config: InternalAxiosRequestConfig): Promise<AxiosResponse>
   if (addonId && method === 'patch') {
     const found = db.addons.find((a) => a.id === addonId.id);
     if (!found) return fail(config, 'Add-on not found', 404);
-    Object.assign(found, body);
+    const title = (body.title ?? body.name ?? found.title ?? found.name) as string;
+    Object.assign(found, body, {
+      name: title,
+      title,
+      description: body.description ?? found.description ?? '',
+    });
     return ok(config, found);
   }
 
@@ -493,12 +636,123 @@ async function route(config: InternalAxiosRequestConfig): Promise<AxiosResponse>
 
   if (method === 'get' && match(path, '/locations')) return ok(config, db.locations);
   if (method === 'get' && match(path, '/custom-cakes')) return ok(config, db.customCakes);
+  if (method === 'post' && match(path, '/custom-cakes')) {
+    const created: CustomCakeRequest = {
+      id: nextId('cc'),
+      customerName: body.customerName ?? '',
+      phone: body.phone ?? '',
+      occasion: body.occasion ?? '',
+      flavour: body.flavour ?? '',
+      weightKg: Number(body.weightKg ?? 1),
+      notes: body.notes ?? '',
+      status: body.status ?? 'new',
+      quotedPrice: body.quotedPrice === '' || body.quotedPrice == null ? null : Number(body.quotedPrice),
+      createdAt: nowIso(),
+    };
+    db.customCakes.unshift(created);
+    return ok(config, created, 201, 'Enquiry created');
+  }
   const cc = match(path, '/custom-cakes/:id');
   if (cc && method === 'patch') {
     const found = db.customCakes.find((c) => c.id === cc.id);
     if (!found) return fail(config, 'Request not found', 404);
-    Object.assign(found, body);
+    Object.assign(found, body, {
+      quotedPrice:
+        body.quotedPrice === '' || body.quotedPrice === undefined
+          ? found.quotedPrice
+          : body.quotedPrice == null
+            ? null
+            : Number(body.quotedPrice),
+      weightKg: body.weightKg != null ? Number(body.weightKg) : found.weightKg,
+    });
     return ok(config, found);
+  }
+  if (cc && method === 'delete') {
+    const index = db.customCakes.findIndex((c) => c.id === cc.id);
+    if (index < 0) return fail(config, 'Request not found', 404);
+    const [removed] = db.customCakes.splice(index, 1);
+    return ok(config, removed, 200, 'Enquiry deleted');
+  }
+
+  if (method === 'get' && match(path, '/offers')) return ok(config, db.offers);
+  if (method === 'post' && match(path, '/offers')) {
+    const created = buildOffer(body);
+    const clash = couponClash(created.code, created.kind);
+    if (clash) return fail(config, clash);
+    if (!created.name) return fail(config, 'Name is required');
+    if (created.kind === 'coupon' && !created.code) return fail(config, 'Coupon code is required');
+    db.offers.unshift(created);
+    return ok(config, created, 201, 'Offer created');
+  }
+  const offerId = match(path, '/offers/:id');
+  if (offerId && method === 'patch') {
+    const found = db.offers.find((o) => o.id === offerId.id);
+    if (!found) return fail(config, 'Offer not found', 404);
+    const next = { ...found, ...buildOfferPatch(body, found), id: found.id, used: found.used };
+    const clash = couponClash(next.code, next.kind, found.id);
+    if (clash) return fail(config, clash);
+    Object.assign(found, next);
+    return ok(config, found);
+  }
+  if (offerId && method === 'delete') {
+    const index = db.offers.findIndex((o) => o.id === offerId.id);
+    if (index < 0) return fail(config, 'Offer not found', 404);
+    const [removed] = db.offers.splice(index, 1);
+    return ok(config, removed, 200, 'Offer deleted');
+  }
+
+  if (method === 'get' && match(path, '/feedback')) {
+    return ok(
+      config,
+      [...db.feedback].sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+    );
+  }
+  const feedbackApprove = match(path, '/feedback/:id/approve');
+  if (feedbackApprove && method === 'post') {
+    const found = db.feedback.find((row) => row.id === feedbackApprove.id);
+    if (!found) return fail(config, 'Feedback not found', 404);
+    if (found.status === 'withdrawn') return fail(config, 'Withdrawn feedback cannot be approved');
+    found.status = 'approved';
+    found.moderator = body.moderator || found.moderator;
+    const published = found.consent ? upsertTestimonialFromFeedback(found) : null;
+    return ok(config, { feedback: found, testimonial: published ?? null }, 200, 'Feedback approved');
+  }
+  const feedbackReject = match(path, '/feedback/:id/reject');
+  if (feedbackReject && method === 'post') {
+    const found = db.feedback.find((row) => row.id === feedbackReject.id);
+    if (!found) return fail(config, 'Feedback not found', 404);
+    if (found.status === 'withdrawn') return fail(config, 'Withdrawn feedback cannot be rejected');
+    found.status = 'rejected';
+    found.moderator = body.moderator || found.moderator;
+    hideTestimonialsForFeedback(found.id);
+    return ok(config, found, 200, 'Feedback rejected');
+  }
+
+  if (method === 'get' && match(path, '/testimonials')) {
+    return ok(
+      config,
+      [...db.testimonials].sort((a, b) => a.displayOrder - b.displayOrder),
+    );
+  }
+  const testimonialId = match(path, '/testimonials/:id');
+  if (testimonialId && method === 'patch') {
+    const found = db.testimonials.find((row) => row.id === testimonialId.id);
+    if (!found) return fail(config, 'Testimonial not found', 404);
+    if (body.displayName !== undefined) found.displayName = String(body.displayName).trim();
+    if (body.quote !== undefined) found.quote = String(body.quote).trim();
+    if (body.active !== undefined) found.active = Boolean(body.active);
+    if (Array.isArray(body.channels)) {
+      found.channels = body.channels.filter((c: string) => c === 'app' || c === 'website');
+    }
+    if (body.displayOrder !== undefined) found.displayOrder = Number(body.displayOrder);
+    if (!found.displayName || !found.quote) return fail(config, 'Display name and quote are required');
+    return ok(config, found);
+  }
+  if (testimonialId && method === 'delete') {
+    const index = db.testimonials.findIndex((row) => row.id === testimonialId.id);
+    if (index < 0) return fail(config, 'Testimonial not found', 404);
+    const [removed] = db.testimonials.splice(index, 1);
+    return ok(config, removed, 200, 'Testimonial deleted');
   }
 
   if (method === 'post' && match(path, '/pos/checkout')) {

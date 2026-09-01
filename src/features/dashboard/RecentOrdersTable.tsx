@@ -1,6 +1,7 @@
 import { Box, Button, Stack, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { OrderIdCell } from '@/components/orders/OrderIdCell';
+import { HighlightName } from '@/components/orders/HighlightName';
 import { DataTable, type Column } from '@/components/ui/DataTable';
 import { StatusChip } from '@/components/ui/StatusChip';
 import { DELIVERY_STATE_LABELS, ORDER_STATUS_LABELS } from '@/constants/status';
@@ -36,7 +37,7 @@ export function RecentOrdersTable({
       label: 'Subcategory',
       render: (row) => getCategoryById(categories, row.items[0]?.subcategoryId)?.name ?? '—',
     },
-    { id: 'customer', label: 'Customer', render: (row) => row.customerName },
+    { id: 'customer', label: 'Customer', render: (row) => <HighlightName value={row.customerName} tone="wine" /> },
     {
       id: 'when',
       label: 'Delivery time',

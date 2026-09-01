@@ -1,19 +1,25 @@
 import { seedAddons } from '@/mocks/data/addons';
 import { seedCategories } from '@/mocks/data/categories';
 import { seedCustomCakes } from '@/mocks/data/customCakes';
+import { seedFeedback } from '@/mocks/data/feedback';
+import { seedOffers } from '@/mocks/data/offers';
 import { seedLocations } from '@/mocks/data/locations';
 import { seedOrders } from '@/mocks/data/orders';
 import { seedProducts } from '@/mocks/data/products';
 import { seedRiders } from '@/mocks/data/riders';
+import { seedTestimonials } from '@/mocks/data/testimonials';
 import { seedUsers } from '@/mocks/data/users';
 import type {
   Addon,
   Category,
   CustomCakeRequest,
   DeliveryPartner,
+  FeedbackItem,
+  Offer,
   Location,
   Order,
   Product,
+  Testimonial,
   User,
 } from '@/types';
 
@@ -30,6 +36,9 @@ export const db = {
   locations: clone(seedLocations) as Location[],
   addons: clone(seedAddons) as Addon[],
   customCakes: clone(seedCustomCakes) as CustomCakeRequest[],
+  offers: clone(seedOffers) as Offer[],
+  feedback: clone(seedFeedback) as FeedbackItem[],
+  testimonials: clone(seedTestimonials) as Testimonial[],
   acceptOrders: true,
   deliveryAssignmentMode: 'manual' as const,
   customCakesMode: 'manual' as const,

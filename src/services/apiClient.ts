@@ -70,6 +70,8 @@ export const apiClient = {
     unwrap<T>(axiosInstance.post<ApiResponse<T>>(url, payload, config)),
   patch: <T>(url: string, payload?: unknown, config?: AxiosRequestConfig) =>
     unwrap<T>(axiosInstance.patch<ApiResponse<T>>(url, payload, config)),
+  delete: <T>(url: string, config?: AxiosRequestConfig) =>
+    unwrap<T>(axiosInstance.delete<ApiResponse<T>>(url, config)),
 };
 
 /** @deprecated Use apiClient — kept so older imports keep compiling during the cutover. */

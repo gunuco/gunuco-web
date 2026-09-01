@@ -4,6 +4,8 @@ export const seedAddons: Addon[] = [
   {
     id: 'add_candles',
     name: 'Sparkler candles',
+    title: 'Sparkler candles',
+    description: 'A small fountain sparkler for the cake table.',
     price: 49,
     active: true,
     applicableCategoryIds: ['cat_premium', 'cat_wedding', 'cat_cakes'],
@@ -11,6 +13,8 @@ export const seedAddons: Addon[] = [
   {
     id: 'add_message',
     name: 'Custom message plaque',
+    title: 'Custom message plaque',
+    description: 'Edible plaque with a short greeting of your choice.',
     price: 79,
     active: true,
     applicableCategoryIds: ['cat_premium', 'cat_wedding', 'cat_cakes'],
@@ -18,6 +22,8 @@ export const seedAddons: Addon[] = [
   {
     id: 'add_gold',
     name: 'Edible gold leaf',
+    title: 'Edible gold leaf',
+    description: 'Hand-finished gold leaf on the top face.',
     price: 249,
     active: true,
     applicableCategoryIds: ['cat_premium', 'cat_wedding'],
@@ -25,6 +31,8 @@ export const seedAddons: Addon[] = [
   {
     id: 'add_flowers',
     name: 'Fresh bloom garnish',
+    title: 'Fresh bloom garnish',
+    description: 'Seasonal blooms, food-safe, placed before dispatch.',
     price: 199,
     active: true,
     applicableCategoryIds: ['cat_premium', 'cat_wedding'],
@@ -32,6 +40,8 @@ export const seedAddons: Addon[] = [
   {
     id: 'add_knife',
     name: 'Cake knife set',
+    title: 'Cake knife set',
+    description: 'Complimentary knife and server for the cutting moment.',
     price: 149,
     active: true,
     applicableCategoryIds: ['cat_wedding'],
@@ -39,6 +49,8 @@ export const seedAddons: Addon[] = [
   {
     id: 'add_giftwrap',
     name: 'Premium gift wrap',
+    title: 'Premium gift wrap',
+    description: 'Ribboned box wrap for gifting.',
     price: 89,
     active: true,
     applicableCategoryIds: ['cat_nyc_cookies', 'cat_premium'],
@@ -46,6 +58,8 @@ export const seedAddons: Addon[] = [
   {
     id: 'add_jar',
     name: 'Cookie jar upgrade',
+    title: 'Cookie jar upgrade',
+    description: 'Reusable glass jar instead of the standard pouch.',
     price: 129,
     active: true,
     applicableCategoryIds: ['cat_nyc_cookies'],
@@ -53,6 +67,8 @@ export const seedAddons: Addon[] = [
   {
     id: 'add_stand',
     name: 'Acrylic cake stand (rental)',
+    title: 'Acrylic cake stand (rental)',
+    description: 'Clear stand, collected after the event.',
     price: 399,
     active: false,
     applicableCategoryIds: ['cat_wedding'],

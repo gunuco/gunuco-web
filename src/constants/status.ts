@@ -1,6 +1,7 @@
 import type {
   CustomCakeRequest,
   DeliveryState,
+  FeedbackItem,
   OrderStatus,
   PaymentStatus,
   PickupStatus,
@@ -74,6 +75,13 @@ export const ORDER_CYCLE_STEPS: OrderStatus[] = [
   'delivered',
 ];
 
+export const FEEDBACK_STATUS_LABELS: Record<FeedbackItem['status'], string> = {
+  pending: 'Pending',
+  approved: 'Approved',
+  rejected: 'Rejected',
+  withdrawn: 'Withdrawn',
+};
+
 export const CUSTOM_CAKE_STATUS_LABELS: Record<CustomCakeRequest['status'], string> = {
   new: 'New',
   quoted: 'Quoted',
@@ -133,4 +141,6 @@ export const STATUS_COLOR: Record<string, 'default' | 'success' | 'warning' | 'e
   high: 'warning',
   approved: 'success',
   withdrawn: 'default',
+  hidden: 'default',
+  published: 'success',
 };

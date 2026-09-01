@@ -4,7 +4,7 @@ import { alpha } from '@mui/material/styles';
 import { useMemo, useState } from 'react';
 import { StatusChip } from '@/components/ui/StatusChip';
 import { ProductEditorDialog } from '@/features/menu/ProductEditorDialog';
-import { productBasePrice } from '@/features/menu/customizationPricing';
+import { productBasePrice, productPhotos } from '@/features/menu/customizationPricing';
 import { useCategories } from '@/hooks/useCategories';
 import { useProducts, useSaveProduct } from '@/hooks/useProducts';
 import type { Product } from '@/types';
@@ -60,6 +60,7 @@ export function MenuProductsTab({ categoryId = '' }: { categoryId?: string }) {
         ) : null}
         {list.map((product) => {
           const sub = getCategoryById(categories, product.subcategoryId)?.name ?? '—';
+          const cover = productPhotos(product)[0];
           return (
             <Paper
               key={product.id}
@@ -79,8 +80,8 @@ export function MenuProductsTab({ categoryId = '' }: { categoryId?: string }) {
                     height: 64,
                     borderRadius: 1.5,
                     flexShrink: 0,
-                    bgcolor: product.imageUrl ? '#111' : `hsl(${product.imageHue} 38% 28%)`,
-                    backgroundImage: product.imageUrl ? `url(${product.imageUrl})` : undefined,
+                    bgcolor: cover ? '#111' : `hsl(${product.imageHue} 38% 28%)`,
+                    backgroundImage: cover ? `url(${cover})` : undefined,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                   }}

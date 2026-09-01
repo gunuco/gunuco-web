@@ -14,5 +14,8 @@ export const queryKeys = {
   deliveryPartners: ['delivery-partners'] as const,
   locations: ['locations'] as const,
   customCakes: ['custom-cakes'] as const,
+  offers: ['offers'] as const,
+  feedback: ['feedback'] as const,
+  testimonials: ['testimonials'] as const,
   reports: ['reports'] as const,
 };

@@ -5,6 +5,8 @@ import SupportAgentRoundedIcon from '@mui/icons-material/SupportAgentRounded';
 import { Badge, Box, Paper, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useMemo, useState } from 'react';
+import { HighlightName } from '@/components/orders/HighlightName';
+import { PanelErrorBoundary } from '@/components/ui/PanelErrorBoundary';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { StatusChip } from '@/components/ui/StatusChip';
 import { TicketWorkspace } from '@/features/support/TicketWorkspace';
@@ -167,9 +169,7 @@ export function SupportTicketsPage() {
                       </Typography>
                       <StatusChip status={ticket.status} />
                     </Stack>
-                    <Typography fontWeight={700} fontSize={13} noWrap>
-                      {ticket.customerName}
-                    </Typography>
+                    <HighlightName value={ticket.customerName} tone="wine" />
                     <Typography variant="caption" color="text.secondary" noWrap>
                       {ticket.message}
                     </Typography>
@@ -183,7 +183,9 @@ export function SupportTicketsPage() {
           </Stack>
           <Box sx={{ flex: 1, minWidth: 0, minHeight: 0, display: 'flex' }}>
             {selected ? (
-              <TicketWorkspace ticket={selected} onBack={() => setSelectedId(null)} />
+              <PanelErrorBoundary fallbackTitle="Could not open this ticket">
+                <TicketWorkspace ticket={selected} onBack={() => setSelectedId(null)} />
+              </PanelErrorBoundary>
             ) : (
               <Stack alignItems="center" justifyContent="center" gap={1} sx={{ flex: 1, color: 'text.secondary' }}>
                 <SupportAgentRoundedIcon sx={{ fontSize: 40, color: brand.goldDark }} />

@@ -141,6 +141,35 @@ export const theme = createTheme({
         },
       },
     },
+    MuiSelect: {
+      defaultProps: {
+        MenuProps: {
+          anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+          transformOrigin: { vertical: 'top', horizontal: 'left' },
+          marginThreshold: 8,
+          disableScrollLock: true,
+          PaperProps: {
+            sx: {
+              mt: 0.5,
+              maxHeight: 280,
+            },
+          },
+        },
+      },
+    },
+    MuiMenu: {
+      defaultProps: {
+        anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+        transformOrigin: { vertical: 'top', horizontal: 'left' },
+        marginThreshold: 8,
+      },
+      styleOverrides: {
+        paper: {
+          marginTop: 4,
+          maxHeight: 280,
+        },
+      },
+    },
     MuiDrawer: {
       styleOverrides: { paper: { border: 'none' } },
     },

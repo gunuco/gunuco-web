@@ -1,4 +1,5 @@
 import { Stack, Typography } from '@mui/material';
+import { HighlightName } from '@/components/orders/HighlightName';
 import { DataTable, type Column } from '@/components/ui/DataTable';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { StatusChip } from '@/components/ui/StatusChip';
@@ -25,8 +26,10 @@ const CANCELLATIONS: CancellationRecord[] = [
 
 export function CancellationsPage() {
   const columns: Column<CancellationRecord>[] = [
-    { id: 'ord', label: 'Order ID', render: (r) => r.orderNumber },
-    { id: 'cust', label: 'Customer', render: (r) => r.customerName },
+    { id: 'ord', label: 'Order ID', render: (r) => (
+      <Typography fontWeight={800} fontSize={13.5}>{r.orderNumber}</Typography>
+    ) },
+    { id: 'cust', label: 'Customer', render: (r) => <HighlightName value={r.customerName} tone="wine" /> },
     { id: 'reason', label: 'Reason', render: (r) => r.reason },
     { id: 'orig', label: 'Original', render: (r) => formatCurrency(r.originalAmount) },
     { id: 'ref', label: 'Refund', render: (r) => formatCurrency(r.refundAmount) },
@@ -62,8 +65,10 @@ const REFUNDS: RefundRecord[] = [
 export function RefundsPage() {
   const columns: Column<RefundRecord>[] = [
     { id: 'id', label: 'Refund ID', render: (r) => r.id.toUpperCase() },
-    { id: 'ord', label: 'Order ID', render: (r) => r.orderNumber },
-    { id: 'cust', label: 'Customer', render: (r) => r.customerName },
+    { id: 'ord', label: 'Order ID', render: (r) => (
+      <Typography fontWeight={800} fontSize={13.5}>{r.orderNumber}</Typography>
+    ) },
+    { id: 'cust', label: 'Customer', render: (r) => <HighlightName value={r.customerName} tone="wine" /> },
     { id: 'amt', label: 'Amount', render: (r) => formatCurrency(r.amount) },
     { id: 'm', label: 'Method', render: (r) => r.method.toUpperCase() },
     { id: 'st', label: 'Status', render: (r) => <StatusChip status={r.status} /> },
@@ -95,8 +100,10 @@ const RETURNS: ReturnRecord[] = [
 
 export function ReturnsPage() {
   const columns: Column<ReturnRecord>[] = [
-    { id: 'ord', label: 'Order ID', render: (r) => r.orderNumber },
-    { id: 'cust', label: 'Customer', render: (r) => r.customerName },
+    { id: 'ord', label: 'Order ID', render: (r) => (
+      <Typography fontWeight={800} fontSize={13.5}>{r.orderNumber}</Typography>
+    ) },
+    { id: 'cust', label: 'Customer', render: (r) => <HighlightName value={r.customerName} tone="wine" /> },
     { id: 'reason', label: 'Reason', render: (r) => r.reason },
     { id: 'sev', label: 'Severity', render: (r) => r.severity },
     { id: 'res', label: 'Resolution', render: (r) => r.resolution.replace('_', ' ') },

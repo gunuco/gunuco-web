@@ -118,6 +118,7 @@ export interface CustomizationPriceGroup {
   key: string;
   label: string;
   required: boolean;
+  enabled?: boolean;
   options: CustomizationPriceOption[];
 }
 
@@ -130,6 +131,7 @@ export interface Product {
   description: string;
   imageHue: number;
   imageUrl?: string;
+  imageUrls?: string[];
   basePrice?: number;
   active: boolean;
   featured?: boolean;
@@ -137,6 +139,7 @@ export interface Product {
   dailyQuota?: number;
   attributes: Record<string, string | number | boolean | string[]>;
   priceTiers: PriceTier[];
+  customizationEnabled?: boolean;
   customizationGroups?: CustomizationPriceGroup[];
   addOnIds: string[];
   tags: string[];
@@ -226,6 +229,7 @@ export interface Location {
 export interface Addon {
   id: string;
   name: string;
+  title?: string;
   price: number;
   active: boolean;
   required?: boolean;
@@ -289,15 +293,26 @@ export interface SupportRefund {
   agentName: string;
 }
 
+export type OfferKind = 'automatic' | 'coupon';
+export type OfferReward = 'percent' | 'flat';
+export type OfferAppliesTo = 'all' | 'category' | 'product';
+
 export interface Offer {
   id: string;
   name: string;
-  type: 'percent' | 'flat';
+  description: string;
+  kind: OfferKind;
+  code: string;
+  reward: OfferReward;
   value: number;
-  scope: string;
+  minOrderAmount: number;
+  maxDiscount: number | null;
+  appliesTo: OfferAppliesTo;
+  categoryIds: string[];
+  productIds: string[];
   startsAt: string;
   endsAt: string;
-  usageLimit: number;
+  usageLimit: number | null;
   used: number;
   active: boolean;
 }

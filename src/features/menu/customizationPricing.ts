@@ -26,6 +26,11 @@ const MATRIX_TO_SCHEMA: Record<string, string[]> = {
   size: ['weightKg', 'packSize', 'size'],
 };
 
+export function productPhotos(product: Pick<Product, 'imageUrl' | 'imageUrls'>): string[] {
+  if (product.imageUrls?.length) return product.imageUrls;
+  return product.imageUrl ? [product.imageUrl] : [];
+}
+
 export function productBasePrice(product: Pick<Product, 'basePrice' | 'priceTiers'>): number {
   if (typeof product.basePrice === 'number') return product.basePrice;
   const kilo = product.priceTiers.find((tier) => tier.amount === 1);
@@ -62,6 +67,7 @@ export function groupsFromSchema(
       key: field.key,
       label: field.label,
       required: Boolean(field.required),
+      enabled: prev?.enabled ?? true,
       options: (field.options ?? []).map((option) => ({
         value: option.value,
         label: option.label,
@@ -125,10 +131,12 @@ export function previewTotal(
 ) {
   const variant = variants.find((row) => row.amount === selectedAmount) ?? variants[0];
   const variantPrice = variant?.price ?? basePrice;
-  const extras = groups.reduce((sum, group) => {
-    const value = selected[group.key];
-    const option = group.options.find((row) => row.value === value);
-    return sum + (option?.extraPrice ?? 0);
-  }, 0);
+  const extras = groups
+    .filter((group) => group.enabled !== false)
+    .reduce((sum, group) => {
+      const value = selected[group.key];
+      const option = group.options.find((row) => row.value === value);
+      return sum + (option?.extraPrice ?? 0);
+    }, 0);
   return { variantPrice, extras, addOnTotal, total: variantPrice + extras + addOnTotal };
 }

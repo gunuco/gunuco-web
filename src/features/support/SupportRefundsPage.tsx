@@ -1,6 +1,7 @@
 import { Button, Stack, Typography } from '@mui/material';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { HighlightName } from '@/components/orders/HighlightName';
 import { DataTable, type Column } from '@/components/ui/DataTable';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { StatusChip } from '@/components/ui/StatusChip';
@@ -15,8 +16,10 @@ export function SupportRefundsPage() {
   const columns: Column<SupportRefund>[] = useMemo(
     () => [
       { id: 'id', label: 'Refund', render: (r) => r.id.toUpperCase() },
-      { id: 'ord', label: 'Order ID', render: (r) => r.orderNumber },
-      { id: 'cust', label: 'Customer', render: (r) => r.customerName },
+      { id: 'ord', label: 'Order ID', render: (r) => (
+        <Typography fontWeight={800} fontSize={13.5}>{r.orderNumber}</Typography>
+      ) },
+      { id: 'cust', label: 'Customer', render: (r) => <HighlightName value={r.customerName} tone="wine" /> },
       { id: 'amt', label: 'Amount', render: (r) => formatCurrency(r.amount) },
       { id: 'kind', label: 'Type', render: (r) => r.kind },
       { id: 'st', label: 'Status', render: (r) => <StatusChip status={r.status} /> },

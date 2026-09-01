@@ -14,11 +14,11 @@ export const NAV_SECTION_LABELS: Record<NavSection, string> = {
 };
 
 export const NAV_SECTION_ORDER: NavSection[] = [
-  'support',
   'operations',
   'catalogue',
   'fulfilment',
   'commerce',
+  'support',
   'system',
 ];
 
@@ -35,8 +35,6 @@ export const NAV_ITEMS: NavItem[] = [
     section: 'operations',
     roles: OPS,
   },
-  { id: 'support', label: 'Support inbox', path: '/support', icon: 'support', section: 'support', roles: SUPPORT },
-  { id: 'customers', label: 'Customers', path: '/support/customers', icon: 'customers', section: 'support', roles: SUPPORT },
   { id: 'menu', label: 'Menu Management', path: '/menu', icon: 'catalog', section: 'catalogue', roles: OPS },
   { id: 'custom', label: 'Custom Cakes', path: '/custom-cakes', icon: 'custom', section: 'catalogue', roles: OA },
   { id: 'production', label: 'Production Queue', path: '/production', icon: 'production', section: 'fulfilment', roles: OPS },
@@ -56,6 +54,8 @@ export const NAV_ITEMS: NavItem[] = [
   { id: 'cancellations', label: 'Cancel Orders', path: '/cancellations', icon: 'cancel', section: 'commerce', roles: OA },
   { id: 'refunds', label: 'Refunds', path: '/refunds', icon: 'refund', section: 'commerce', roles: [...OA, 'customer_support'] },
   { id: 'returns', label: 'Returns', path: '/returns', icon: 'returns', section: 'commerce', roles: OA },
+  { id: 'support', label: 'Support inbox', path: '/support', icon: 'support', section: 'support', roles: SUPPORT },
+  { id: 'customers', label: 'Customers', path: '/support/customers', icon: 'customers', section: 'support', roles: SUPPORT },
   { id: 'locations', label: 'Locations & Branches', path: '/locations', icon: 'locations', section: 'system', roles: ['owner'] },
   { id: 'access', label: 'Access', path: '/access', icon: 'access', section: 'system', roles: OA },
   { id: 'reports', label: 'Reports', path: '/reports', icon: 'reports', section: 'system', roles: OA },

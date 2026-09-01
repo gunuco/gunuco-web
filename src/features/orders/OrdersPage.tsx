@@ -1,5 +1,5 @@
 import { Button, MenuItem, Stack, TextField } from '@mui/material';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DataTable, type Column } from '@/components/ui/DataTable';
 import { ErrorState, EmptyState } from '@/components/ui/Feedback';
@@ -8,15 +8,16 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { StatusChip } from '@/components/ui/StatusChip';
 import { PAYMENT_STATUS_LABELS } from '@/constants/status';
 import { HighlightName } from '@/components/orders/HighlightName';
-import { CustomerCell, CustomizationsCell } from '@/components/orders/CustomerCell';
+import { CustomizationsCell } from '@/components/orders/CustomerCell';
 import { OrderIdCell } from '@/components/orders/OrderIdCell';
 import { TotalCell } from '@/components/orders/TotalCell';
+import { IncomingOrderDialog } from '@/features/orders/IncomingOrderDialog';
 import { useCategories } from '@/hooks/useCategories';
 import { useConfirm } from '@/hooks/useConfirm';
 import { useOrderMutations, useOrders } from '@/hooks/useOrders';
 import { useAuthStore } from '@/store/authStore';
 import type { Order, OrderFilters, PaymentStatus } from '@/types';
-import { getCategoryById, getChildCategories, getParentCategories } from '@/utils/category';
+import { getChildCategories, getParentCategories } from '@/utils/category';
 import { isPendingForId } from '@/utils/mutation';
 import { formatOrderCustomizations } from '@/utils/orderCustomizations';
 import { sortOrdersLatestFirst } from '@/utils/orderNumber';
@@ -36,10 +37,25 @@ export function OrdersPage() {
   const list = useOrders(filters);
   const { accept, reject } = useOrderMutations();
   const rows = useMemo(() => sortOrdersLatestFirst(list.data?.data ?? []), [list.data?.data]);
+  const [selected, setSelected] = useState<Order | null>(null);
 
   const parents = getParentCategories(categories).filter((c) => c.active);
   const children = filters.categoryId ? getChildCategories(categories, filters.categoryId) : [];
   const canEdit = role ? canMutateOrders(role) : false;
+
+  const rejectOrder = useCallback(
+    async (row: Order) => {
+      const ok = await confirmApi.confirm(
+        'Reject this order?',
+        `${row.orderNumber} will be rejected. Paid orders are marked refunded.`,
+      );
+      if (ok) {
+        reject.mutate({ id: row.id, reason: 'Rejected from admin' });
+        setSelected(null);
+      }
+    },
+    [confirmApi, reject],
+  );
 
   const columns: Column<Order>[] = useMemo(
     () => [
@@ -54,24 +70,6 @@ export function OrdersPage() {
         render: (row) => <HighlightName value={row.customerName} tone="wine" />,
       },
       {
-        id: 'details',
-        label: 'Details',
-        render: (row) => (
-          <CustomerCell phone={row.customerPhone} address={row.customerAddress} />
-        ),
-      },
-      {
-        id: 'cat',
-        label: 'Category',
-        render: (row) => {
-          const name =
-            getCategoryById(categories, row.items[0]?.subcategoryId)?.name ??
-            getCategoryById(categories, row.items[0]?.categoryId)?.name ??
-            '—';
-          return <HighlightName value={name} tone="gold" />;
-        },
-      },
-      {
         id: 'custom',
         label: 'Customizations',
         render: (row) => <CustomizationsCell value={formatOrderCustomizations(row, categories)} />,
@@ -79,15 +77,11 @@ export function OrdersPage() {
       {
         id: 'total',
         label: 'Total',
-        align: 'left',
-        width: 92,
         render: (row) => <TotalCell amount={row.total} paid={row.paymentStatus === 'completed'} />,
       },
       {
         id: 'pay',
         label: 'Payment',
-        align: 'left',
-        width: 128,
         render: (row) => {
           const paid = row.paymentStatus === 'completed';
           return (
@@ -101,7 +95,6 @@ export function OrdersPage() {
       {
         id: 'actions',
         label: '',
-        width: 184,
         noWrap: true,
         render: (row) => {
           const rowBusy = isPendingForId(accept, row.id) || isPendingForId(reject, row.id);
@@ -122,11 +115,7 @@ export function OrdersPage() {
               color="error"
               disabled={!canEdit || rowBusy}
               onClick={async () => {
-                const ok = await confirmApi.confirm(
-                  'Reject this order?',
-                  `${row.orderNumber} will be rejected. Paid orders are marked refunded.`,
-                );
-                if (ok) reject.mutate({ id: row.id, reason: 'Rejected from admin' });
+                await rejectOrder(row);
               }}
               sx={{ minHeight: 32, px: 1.25, fontSize: 12, flexShrink: 0, whiteSpace: 'nowrap' }}
             >
@@ -143,12 +132,16 @@ export function OrdersPage() {
       accept.variables,
       canEdit,
       categories,
-      confirmApi,
       reject,
       reject.isPending,
       reject.variables,
+      rejectOrder,
     ],
   );
+
+  const selectedBusy = selected
+    ? isPendingForId(accept, selected.id) || isPendingForId(reject, selected.id)
+    : false;
 
   const showTable = list.isLoading || rows.length > 0;
 
@@ -251,10 +244,11 @@ export function OrdersPage() {
           <DataTable
             connected
             headerFit
-            minWidth={1120}
+            minWidth={1020}
             columns={columns}
             rows={rows}
             rowKey={(r) => r.id}
+            onRowClick={setSelected}
             loading={list.isLoading ? 8 : false}
             page={(filters.page ?? 1) - 1}
             pageSize={filters.pageSize ?? 10}
@@ -264,6 +258,21 @@ export function OrdersPage() {
           />
         )}
       </Stack>
+      <IncomingOrderDialog
+        order={selected}
+        categories={categories}
+        canEdit={canEdit}
+        busy={selectedBusy}
+        onClose={() => setSelected(null)}
+        onAccept={() => {
+          if (!selected) return;
+          accept.mutate(selected.id);
+          setSelected(null);
+        }}
+        onReject={() => {
+          if (selected) void rejectOrder(selected);
+        }}
+      />
       <ConfirmDialog
         open={confirmApi.open}
         title={confirmApi.title}

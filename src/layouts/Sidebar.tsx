@@ -49,7 +49,7 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
           borderBottom: `1px solid ${alpha(brand.gold, 0.16)}`,
         }}
       >
-        <GunucoMark size={40} withWordmark inverted />
+        <GunucoMark size={48} withWordmark inverted />
       </Box>
       <List
         sx={{
@@ -72,10 +72,11 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
                 sx={{
                   px: 1.4,
                   pb: 0.7,
-                  fontSize: 10,
+                  fontSize: 16,
                   fontWeight: 800,
-                  letterSpacing: '0.16em',
-                  color: brand.goldLight,
+                  letterSpacing: '0.12em',
+                  textTransform: 'uppercase',
+                  color: brand.gold,
                 }}
               >
                 {NAV_SECTION_LABELS[section as NavSection]}
@@ -122,14 +123,14 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
                       '&:hover': { bgcolor: alpha(brand.gold, 0.1), color: brand.cream },
                     }}
                   >
-                    <ListItemIcon sx={{ minWidth: 34, color: 'inherit' }}>
-                      <Icon fontSize="small" />
+                    <ListItemIcon sx={{ minWidth: 36, color: 'inherit' }}>
+                      <Icon sx={{ fontSize: 22 }} />
                     </ListItemIcon>
                     <ListItemText
                       primary={item.label}
                       primaryTypographyProps={{
-                        fontSize: 13.2,
-                        fontWeight: active ? 800 : 600,
+                        fontSize: 15,
+                        fontWeight: active ? 800 : 650,
                         color: 'inherit',
                       }}
                     />

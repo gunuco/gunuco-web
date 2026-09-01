@@ -14,7 +14,11 @@ export function formatNumber(value: number): string {
 }
 
 export function formatDateTime(iso: string): string {
-  return format(parseISO(iso), 'dd MMM yyyy, hh:mm a');
+  try {
+    return format(parseISO(iso), 'dd MMM yyyy, hh:mm a');
+  } catch {
+    return iso;
+  }
 }
 
 export function formatShortDateTime(iso: string): string {

@@ -22,9 +22,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { PhotoUploadField } from '@/features/menu/PhotoUploadField';
 import { ProductPreviewCard } from '@/features/menu/ProductPreviewCard';
 import {
-  buildGroupsForCategory,
   defaultVariants,
+  groupsFromSchema,
   productBasePrice,
+  productPhotos,
 } from '@/features/menu/customizationPricing';
 import { useAddons } from '@/hooks/useResources';
 import type { Category, CustomizationPriceGroup, PriceTier, Product } from '@/types';
@@ -40,10 +41,12 @@ interface Draft {
   active: boolean;
   featured: boolean;
   imageUrl?: string;
+  imageUrls: string[];
   imageHue: number;
   basePrice: number;
   variants: PriceTier[];
   groups: CustomizationPriceGroup[];
+  customizationEnabled: boolean;
   addOnIds: string[];
   selected: Record<string, string>;
   selectedAmount: number | null;
@@ -52,8 +55,9 @@ interface Draft {
 function emptyDraft(categories: Category[]): Draft {
   const parent = getParentCategories(categories).find((row) => row.active);
   const child = parent ? getChildCategories(categories, parent.id)[0] : undefined;
+  const cat = child ?? parent;
   const basePrice = 1299;
-  const groups = buildGroupsForCategory(categories, child ?? parent);
+  const groups = groupsFromSchema(cat?.attributeSchema ?? [], cat?.customizationPricing);
   const selected: Record<string, string> = {};
   for (const group of groups) selected[group.key] = group.options[0]?.value ?? '';
   const variants = defaultVariants(child?.pricingModel ?? parent?.pricingModel ?? 'weight', basePrice);
@@ -65,10 +69,12 @@ function emptyDraft(categories: Category[]): Draft {
     description: '',
     active: true,
     featured: false,
+    imageUrls: [],
     imageHue: 18,
     basePrice,
     variants,
     groups,
+    customizationEnabled: groups.length > 0,
     addOnIds: [],
     selected,
     selectedAmount: variants.find((row) => row.amount === 1)?.amount ?? variants[0]?.amount ?? 1,
@@ -78,12 +84,16 @@ function emptyDraft(categories: Category[]): Draft {
 function fromProduct(product: Product, categories: Category[]): Draft {
   const child = getCategoryById(categories, product.subcategoryId);
   const basePrice = productBasePrice(product);
-  const groups = buildGroupsForCategory(categories, child, product.customizationGroups);
+  const groups = groupsFromSchema(
+    child?.attributeSchema ?? [],
+    product.customizationGroups ?? child?.customizationPricing,
+  );
   const selected: Record<string, string> = {};
   for (const group of groups) {
     const current = product.attributes[group.key];
     selected[group.key] = current != null ? String(current) : group.options[0]?.value ?? '';
   }
+  const photos = productPhotos(product);
   return {
     name: product.name,
     sku: product.sku,
@@ -92,13 +102,15 @@ function fromProduct(product: Product, categories: Category[]): Draft {
     description: product.description,
     active: product.active,
     featured: Boolean(product.featured),
-    imageUrl: product.imageUrl,
+    imageUrl: photos[0],
+    imageUrls: photos,
     imageHue: product.imageHue,
     basePrice,
     variants: product.priceTiers.length
       ? product.priceTiers
       : defaultVariants(child?.pricingModel ?? 'weight', basePrice),
     groups,
+    customizationEnabled: product.customizationEnabled ?? groups.length > 0,
     addOnIds: product.addOnIds,
     selected,
     selectedAmount: product.priceTiers.find((row) => row.amount === 1)?.amount ?? product.priceTiers[0]?.amount ?? 1,
@@ -144,11 +156,19 @@ export function ProductEditorDialog({
 
   const applyCategory = (categoryId: string, subcategoryId: string) => {
     const cat = getCategoryById(categories, subcategoryId) ?? getCategoryById(categories, categoryId);
-    const groups = buildGroupsForCategory(categories, cat);
+    const groups = groupsFromSchema(cat?.attributeSchema ?? [], cat?.customizationPricing);
     const selected: Record<string, string> = {};
     for (const group of groups) selected[group.key] = group.options[0]?.value ?? '';
     const variants = defaultVariants(cat?.pricingModel ?? 'weight', draft.basePrice);
-    patch({ categoryId, subcategoryId, groups, selected, variants, selectedAmount: variants.find((row) => row.amount === 1)?.amount ?? variants[0]?.amount ?? null });
+    patch({
+      categoryId,
+      subcategoryId,
+      groups,
+      selected,
+      variants,
+      customizationEnabled: groups.length > 0,
+      selectedAmount: variants.find((row) => row.amount === 1)?.amount ?? variants[0]?.amount ?? null,
+    });
   };
 
   const save = () => {
@@ -163,10 +183,12 @@ export function ProductEditorDialog({
       description: draft.description.trim(),
       active: draft.active,
       featured: draft.featured,
-      imageUrl: draft.imageUrl,
+      imageUrl: draft.imageUrls[0],
+      imageUrls: draft.imageUrls,
       imageHue: draft.imageHue,
       basePrice: Number(draft.basePrice) || 0,
       priceTiers: draft.variants.filter((row) => row.label && !Number.isNaN(row.price)),
+      customizationEnabled: draft.customizationEnabled,
       customizationGroups: draft.groups,
       addOnIds: draft.addOnIds,
       attributes,
@@ -198,9 +220,9 @@ export function ProductEditorDialog({
           <Grid item xs={12} md={7}>
             <Stack gap={2.25}>
               <PhotoUploadField
-                value={draft.imageUrl}
+                values={draft.imageUrls}
                 hue={draft.imageHue}
-                onChange={(imageUrl) => patch({ imageUrl })}
+                onChange={(imageUrls) => patch({ imageUrls, imageUrl: imageUrls[0] })}
               />
               <TextField
                 label="Item name"
@@ -350,56 +372,112 @@ export function ProductEditorDialog({
               </Button>
 
               <Divider />
-              <Typography fontWeight={800}>Customization pricing</Typography>
-              <Typography variant="body2" color="text.secondary">
-                Extra rupees on top of base / variant. Zero means included. Turn groups off in the Customization tab.
-              </Typography>
-              {draft.groups.length === 0 ? (
+              <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ sm: 'center' }} justifyContent="space-between" gap={1}>
+                <Stack gap={0.35}>
+                  <Typography fontWeight={800}>Customization</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Uses the options already defined for this category. Extra ₹ sits on top of the selected variant.
+                  </Typography>
+                </Stack>
+                <FormControlLabel
+                  sx={{ ml: { sm: 1 }, flexShrink: 0 }}
+                  control={
+                    <Switch
+                      checked={draft.customizationEnabled}
+                      onChange={(_, on) => patch({ customizationEnabled: on })}
+                    />
+                  }
+                  label={draft.customizationEnabled ? 'Apply rules on' : 'Apply rules off'}
+                />
+              </Stack>
+              {!draft.customizationEnabled ? (
                 <Typography variant="body2" color="text.secondary">
-                  No customization groups are on for this category.
+                  Customization rules are off for this item. Customers will only pick size / variant.
+                </Typography>
+              ) : draft.groups.length === 0 ? (
+                <Typography variant="body2" color="text.secondary">
+                  No customization options are defined for this category yet.
                 </Typography>
               ) : (
-                draft.groups.map((group, gi) => (
-                  <Stack key={group.key} gap={1} sx={{ p: 1.5, border: 1, borderColor: 'divider', borderRadius: 2 }}>
-                    <Typography fontWeight={800} fontSize={13}>
-                      {group.label}
-                    </Typography>
-                    {group.options.map((option, oi) => (
-                      <Stack key={option.value} direction="row" gap={1} alignItems="center">
-                        <Typography sx={{ flex: 1 }} variant="body2">
-                          {option.label}
+                draft.groups.map((group, gi) => {
+                  const on = group.enabled !== false;
+                  return (
+                    <Stack
+                      key={group.key}
+                      gap={1}
+                      sx={{
+                        p: 1.5,
+                        border: 1,
+                        borderColor: 'divider',
+                        borderRadius: 2,
+                        opacity: on ? 1 : 0.55,
+                      }}
+                    >
+                      <Stack direction="row" alignItems="center" justifyContent="space-between" gap={1}>
+                        <Typography fontWeight={800} fontSize={13}>
+                          {group.label}
                         </Typography>
-                        <TextField
-                          size="small"
-                          label="Extra ₹"
-                          type="number"
-                          value={option.extraPrice}
-                          onChange={(e) => {
-                            const extraPrice = Number(e.target.value) || 0;
-                            const groups = draft.groups.map((g, i) =>
-                              i === gi
-                                ? {
-                                    ...g,
-                                    options: g.options.map((row, j) => (j === oi ? { ...row, extraPrice } : row)),
-                                  }
-                                : g,
-                            );
-                            patch({ groups });
-                          }}
-                          sx={{ width: 120 }}
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              size="small"
+                              checked={on}
+                              onChange={(_, enabled) => {
+                                const groups = draft.groups.map((g, i) => (i === gi ? { ...g, enabled } : g));
+                                patch({ groups });
+                              }}
+                            />
+                          }
+                          label={on ? 'On' : 'Off'}
                         />
                       </Stack>
-                    ))}
-                  </Stack>
-                ))
+                      {group.options.map((option, oi) => (
+                        <Stack key={option.value} direction="row" gap={1} alignItems="center">
+                          <Typography sx={{ flex: 1 }} variant="body2">
+                            {option.label}
+                          </Typography>
+                          <TextField
+                            size="small"
+                            label="Extra ₹"
+                            type="number"
+                            disabled={!on}
+                            value={option.extraPrice}
+                            onChange={(e) => {
+                              const extraPrice = Number(e.target.value) || 0;
+                              const groups = draft.groups.map((g, i) =>
+                                i === gi
+                                  ? {
+                                      ...g,
+                                      options: g.options.map((row, j) => (j === oi ? { ...row, extraPrice } : row)),
+                                    }
+                                  : g,
+                              );
+                              patch({ groups });
+                            }}
+                            sx={{ width: 120 }}
+                          />
+                        </Stack>
+                      ))}
+                    </Stack>
+                  );
+                })
               )}
 
               <Divider />
               <Typography fontWeight={800}>Add-ons</Typography>
+              <Typography variant="body2" color="text.secondary">
+                Tick extras customers can add with this item.
+              </Typography>
               <Stack>
+                {applicable.length === 0 ? (
+                  <Typography variant="body2" color="text.secondary">
+                    No add-ons for this category yet. Create them in the Add-ons tab.
+                  </Typography>
+                ) : null}
                 {applicable.map((row) => (
                   <FormControlLabel
                     key={row.id}
+                    sx={{ alignItems: 'flex-start', ml: 0, mr: 0 }}
                     control={
                       <Checkbox
                         checked={draft.addOnIds.includes(row.id)}
@@ -412,7 +490,18 @@ export function ProductEditorDialog({
                         }
                       />
                     }
-                    label={`${row.name} · ${formatCurrency(row.price)}`}
+                    label={
+                      <Stack gap={0.15}>
+                        <Typography fontSize={13} fontWeight={700}>
+                          {row.title || row.name} · {formatCurrency(row.price)}
+                        </Typography>
+                        {row.description ? (
+                          <Typography variant="caption" color="text.secondary">
+                            {row.description}
+                          </Typography>
+                        ) : null}
+                      </Stack>
+                    }
                   />
                 ))}
               </Stack>
@@ -422,13 +511,17 @@ export function ProductEditorDialog({
             <ProductPreviewCard
               name={draft.name}
               description={draft.description}
-              imageUrl={draft.imageUrl}
+              imageUrls={draft.imageUrls}
               hue={draft.imageHue}
               basePrice={draft.basePrice}
               variants={draft.variants}
               selectedAmount={draft.selectedAmount}
               onSelectAmount={(selectedAmount) => patch({ selectedAmount })}
-              groups={draft.groups}
+              groups={
+                draft.customizationEnabled
+                  ? draft.groups.filter((group) => group.enabled !== false)
+                  : []
+              }
               selected={draft.selected}
               onSelectOption={(key, value) => patch({ selected: { ...draft.selected, [key]: value } })}
               addOns={selectedAddOns}

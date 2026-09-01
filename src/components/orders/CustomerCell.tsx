@@ -1,4 +1,4 @@
-import { Box, Link, Stack, Tooltip, Typography } from '@mui/material';
+import { Box, Stack, Tooltip, Typography } from '@mui/material';
 import { HighlightName } from '@/components/orders/HighlightName';
 
 const clamp2 = {
@@ -31,10 +31,8 @@ export function CustomerCell({
         sx={{ minWidth: 0, width: '100%', textAlign: 'center', cursor: 'default', lineHeight: 1.15 }}
       >
         {name ? <HighlightName value={name} tone="wine" /> : null}
-        <Link
-          href={`tel:${phone.replace(/\s/g, '')}`}
-          underline="hover"
-          onClick={(e) => e.stopPropagation()}
+        <Typography
+          component="span"
           sx={{
             fontSize: 12,
             fontWeight: 700,
@@ -51,7 +49,7 @@ export function CustomerCell({
           }}
         >
           {phone}
-        </Link>
+        </Typography>
         <Typography
           component="span"
           color="text.secondary"

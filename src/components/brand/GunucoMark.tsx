@@ -1,4 +1,5 @@
 import { Box, Stack, Typography } from '@mui/material';
+import logo from '@/assets/gunuco-logo.jpg';
 import { brand } from '@/theme/colors';
 
 interface GunucoMarkProps {
@@ -19,7 +20,7 @@ export function GunucoMark({
     <Stack direction="row" alignItems="center" gap={1.25} sx={{ minWidth: 0 }}>
       <Box
         component="img"
-        src="/favicon.svg"
+        src={logo}
         alt={withWordmark ? '' : 'GUNUCO'}
         width={size}
         height={size}
@@ -31,10 +32,12 @@ export function GunucoMark({
           flexShrink: 0,
           borderRadius: '50%',
           objectFit: 'cover',
+          objectPosition: 'center',
           display: 'block',
+          bgcolor: brand.wine,
           boxShadow: inverted
-            ? `0 0 0 2px ${brand.gold}61, 0 8px 18px ${brand.wineDark}47`
-            : `0 8px 18px ${brand.wine}38`,
+            ? `0 0 0 2px ${brand.gold}aa, 0 8px 18px ${brand.wineDark}47`
+            : `0 0 0 2px ${brand.gold}55, 0 8px 18px ${brand.wine}38`,
         }}
       />
       {withWordmark ? (

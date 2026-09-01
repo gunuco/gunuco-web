@@ -4,13 +4,12 @@ import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import FullscreenExitRoundedIcon from '@mui/icons-material/FullscreenExitRounded';
 import OpenInFullRoundedIcon from '@mui/icons-material/OpenInFullRounded';
 import SmsRoundedIcon from '@mui/icons-material/SmsRounded';
-import { Button, Dialog, DialogContent, DialogTitle, Divider, IconButton, Stack, Typography } from '@mui/material';
+import { Button, Dialog, DialogContent, DialogTitle, IconButton, Stack, Typography } from '@mui/material';
 import { useState } from 'react';
+import { OrderTicketDetails } from '@/components/orders/OrderTicketDetails';
 import { StatusChip } from '@/components/ui/StatusChip';
 import { ORDER_STATUS_LABELS, PAYMENT_STATUS_LABELS } from '@/constants/status';
 import type { Category, Order } from '@/types';
-import { getAttributeSchema, getCategoryById, resolveAttributeLabel } from '@/utils/category';
-import { formatCurrency, formatDateTime } from '@/utils/format';
 import { canPingPhone, smsHref, telHref, whatsappHref } from '@/utils/phone';
 
 export function ProductionOrderDialog({
@@ -72,86 +71,38 @@ export function ProductionOrderDialog({
               />
               <StatusChip status={order.source} label={order.source} />
             </Stack>
-            <Stack gap={0.35}>
-              <Typography variant="subtitle2" color="text.secondary">
-                Ticket
-              </Typography>
-              <Typography variant="body2">Placed {formatDateTime(order.createdAt)}</Typography>
-              <Typography variant="body2" fontWeight={700}>
-                Needed by {formatDateTime(order.promisedAt)}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {order.fulfillmentMethod.replaceAll('_', ' ')} · {order.locationId}
-              </Typography>
-            </Stack>
-            <Divider />
-            <Stack gap={0.5}>
-              <Typography variant="subtitle2" color="text.secondary">
-                Customer
-              </Typography>
-              <Typography fontWeight={800}>{order.customerName}</Typography>
-              <Typography variant="body2">{order.customerPhone}</Typography>
-              <Typography variant="body2">{order.customerAddress}</Typography>
-            </Stack>
-            {ping ? (
-              <Stack direction="row" gap={1} flexWrap="wrap">
-                <Button size="small" variant="contained" startIcon={<CallRoundedIcon />} href={telHref(order.customerPhone)}>
-                  Call
-                </Button>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  startIcon={<ChatRoundedIcon />}
-                  href={whatsappHref(order.customerPhone, pingText)}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  WhatsApp
-                </Button>
-                <Button size="small" variant="outlined" startIcon={<SmsRoundedIcon />} href={smsHref(order.customerPhone, pingText)}>
-                  SMS
-                </Button>
-              </Stack>
-            ) : null}
-            <Divider />
-            <Typography variant="subtitle2" color="text.secondary">
-              Items & customizations
-            </Typography>
-            {order.items.map((item) => {
-              const cat = getCategoryById(categories, item.subcategoryId) ?? getCategoryById(categories, item.categoryId);
-              const schema = getAttributeSchema(cat);
-              return (
-                <Stack key={item.id} gap={0.5}>
-                  <Typography fontWeight={800}>
-                    {item.productName} × {item.quantity}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {cat?.name}
-                  </Typography>
-                  {Object.entries(item.attributes).map(([key, value]) => (
-                    <Typography key={key} variant="body2">
-                      {schema.find((field) => field.key === key)?.label ?? key}: {resolveAttributeLabel(schema, key, value)}
-                    </Typography>
-                  ))}
-                  {item.addOns.map((addon) => (
-                    <Typography key={addon.id} variant="body2" color="text.secondary">
-                      + {addon.name} ({formatCurrency(addon.price)})
-                    </Typography>
-                  ))}
-                  <Typography fontWeight={700}>{formatCurrency(item.lineTotal)}</Typography>
-                </Stack>
-              );
-            })}
-            {order.notes ? (
-              <Typography variant="body2">
-                Kitchen note: {order.notes}
-              </Typography>
-            ) : null}
-            <Divider />
-            <Stack direction="row" justifyContent="space-between">
-              <Typography color="text.secondary">Total</Typography>
-              <Typography fontWeight={800}>{formatCurrency(order.total)}</Typography>
-            </Stack>
+            <OrderTicketDetails
+              order={order}
+              categories={categories}
+              notesPrefix="Kitchen note: "
+              orderIdExtra={
+                <Typography variant="body2" color="text.secondary">
+                  {order.fulfillmentMethod.replaceAll('_', ' ')} · {order.locationId}
+                </Typography>
+              }
+              afterDetails={
+                ping ? (
+                  <Stack direction="row" gap={1} flexWrap="wrap">
+                    <Button size="small" variant="contained" startIcon={<CallRoundedIcon />} href={telHref(order.customerPhone)}>
+                      Call
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      startIcon={<ChatRoundedIcon />}
+                      href={whatsappHref(order.customerPhone, pingText)}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      WhatsApp
+                    </Button>
+                    <Button size="small" variant="outlined" startIcon={<SmsRoundedIcon />} href={smsHref(order.customerPhone, pingText)}>
+                      SMS
+                    </Button>
+                  </Stack>
+                ) : null
+              }
+            />
           </Stack>
         ) : null}
       </DialogContent>

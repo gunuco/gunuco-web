@@ -8,10 +8,22 @@ export const tableSurfaces = {
   body: brand.creamPaper,
 } as const;
 
+export const filterSelectMenuProps = {
+  displayEmpty: true,
+  MenuProps: {
+    anchorOrigin: { vertical: 'bottom' as const, horizontal: 'left' as const },
+    transformOrigin: { vertical: 'top' as const, horizontal: 'left' as const },
+    marginThreshold: 8,
+    disableScrollLock: true,
+    PaperProps: { sx: { mt: 0.5, maxHeight: 280 } },
+  },
+};
+
 /** Stable labels: always shrunk so fields do not jump on click. */
 export const filterFieldProps = {
   size: 'small' as const,
   InputLabelProps: { shrink: true },
+  SelectProps: filterSelectMenuProps,
 };
 
 export function FilterBar({

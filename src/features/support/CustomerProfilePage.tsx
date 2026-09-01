@@ -1,8 +1,11 @@
-import { Button, Stack, Typography } from '@mui/material';
+import { Button, Stack, TextField, Typography } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { HighlightName } from '@/components/orders/HighlightName';
 import { AppDrawer } from '@/components/ui/AppDrawer';
 import { DataTable, type Column } from '@/components/ui/DataTable';
+import { DetailField } from '@/components/ui/DetailField';
+import { FilterBar, filterFieldProps } from '@/components/ui/FilterBar';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { StatusChip } from '@/components/ui/StatusChip';
 import { customersFromOrders, findCustomer, type CustomerProfile } from '@/features/support/customerLookup';
@@ -18,6 +21,7 @@ export function CustomerProfilePage() {
   const tickets = useSupportStore((s) => s.tickets);
   const refunds = useSupportStore((s) => s.refunds);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
 
   const rows = useMemo(() => customersFromOrders(), []);
   const phoneParam = params.get('phone') ?? '';
@@ -28,6 +32,15 @@ export function CustomerProfilePage() {
     if (match) setSelectedKey(match.key);
   }, [phoneParam]);
 
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return rows;
+    return rows.filter((row) => {
+      const blob = `${row.id} ${row.name} ${row.phone} ${row.email} ${row.address}`.toLowerCase();
+      return blob.includes(q) || phoneDigits(row.phone).includes(q.replace(/\D/g, ''));
+    });
+  }, [rows, search]);
+
   const selected = rows.find((r) => r.key === selectedKey) ?? null;
   const selectedTickets = selected
     ? tickets.filter((t) => phoneDigits(t.phone) === phoneDigits(selected.phone))
@@ -35,7 +48,16 @@ export function CustomerProfilePage() {
   const selectedRefunds = selected ? refunds.filter((r) => r.customerName === selected.name) : [];
 
   const columns: Column<CustomerProfile>[] = [
-    { id: 'name', label: 'Name', render: (r) => r.name },
+    {
+      id: 'id',
+      label: 'Customer ID',
+      render: (r) => (
+        <Typography fontWeight={800} fontSize={13} sx={{ letterSpacing: '0.02em' }}>
+          {r.id}
+        </Typography>
+      ),
+    },
+    { id: 'name', label: 'Customer', render: (r) => <HighlightName value={r.name} tone="wine" /> },
     {
       id: 'phone',
       label: 'Phone',
@@ -62,23 +84,46 @@ export function CustomerProfilePage() {
         title="Customers"
         subtitle="Open a row for phone, address, orders, tickets, and refunds. Tickets deep-link here."
       />
-      <DataTable columns={columns} rows={rows} rowKey={(r) => r.key} onRowClick={(row) => setSelectedKey(row.key)} />
+      <Stack gap={0}>
+        <FilterBar connected={filtered.length > 0 || Boolean(search)}>
+          <TextField
+            {...filterFieldProps}
+            label="Search"
+            placeholder="Customer ID, name, or phone"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            sx={{ minWidth: { sm: 280 }, flex: { sm: '1 1 280px' } }}
+          />
+        </FilterBar>
+        <DataTable
+          connected
+          columns={columns}
+          rows={filtered}
+          rowKey={(r) => r.key}
+          onRowClick={(row) => setSelectedKey(row.key)}
+          emptyMessage={search.trim() ? 'No customers match that search.' : 'No customers yet.'}
+        />
+      </Stack>
       <AppDrawer
         open={Boolean(selected)}
-        title={selected?.name ?? 'Customer'}
+        title={selected ? `${selected.name} · ${selected.id}` : 'Customer'}
         onClose={() => setSelectedKey(null)}
         width={520}
       >
         {selected ? (
           <Stack gap={2}>
-            <Typography
-              component="a"
-              href={`tel:${selected.phone.replace(/\s/g, '')}`}
-              sx={{ color: brand.wine, fontWeight: 700, textDecoration: 'none' }}
-            >
-              {selected.phone}
-            </Typography>
-            <Typography variant="body2">{selected.address}</Typography>
+            <DetailField label="Customer ID">
+              <Typography fontWeight={800}>{selected.id}</Typography>
+            </DetailField>
+            <DetailField label="Customer">
+              <Typography fontWeight={800}>{selected.name}</Typography>
+            </DetailField>
+            <DetailField label="Details">
+              <Typography variant="body2" sx={{ pointerEvents: 'none' }}>
+                {selected.phone}
+              </Typography>
+              <Typography variant="body2">{selected.address}</Typography>
+            </DetailField>
             <Stack direction="row" gap={1} flexWrap="wrap">
               <Button size="small" variant="outlined" onClick={() => navigate('/support')}>
                 Tickets
@@ -88,10 +133,7 @@ export function CustomerProfilePage() {
               </Button>
             </Stack>
             {selectedTickets.length ? (
-              <Stack gap={0.75}>
-                <Typography fontWeight={800} fontSize={13}>
-                  Tickets
-                </Typography>
+              <DetailField label="Tickets">
                 {selectedTickets.map((ticket) => (
                   <Stack
                     key={ticket.id}
@@ -101,30 +143,26 @@ export function CustomerProfilePage() {
                     sx={{ py: 0.75, borderBottom: 1, borderColor: 'divider', cursor: 'pointer' }}
                     onClick={() => navigate('/support')}
                   >
-                    <Typography fontWeight={700}>{ticket.ticketNumber}</Typography>
+                    <Typography fontWeight={800}>{ticket.ticketNumber}</Typography>
                     <StatusChip status={ticket.status} />
                   </Stack>
                 ))}
-              </Stack>
+              </DetailField>
             ) : null}
             {selectedRefunds.length ? (
-              <Stack gap={0.5}>
-                <Typography fontWeight={800} fontSize={13}>
-                  Desk refunds
-                </Typography>
+              <DetailField label="Refunds">
                 {selectedRefunds.map((row) => (
                   <Typography key={row.id} variant="body2">
                     {formatCurrency(row.amount)} · {row.kind} · {row.status}
                   </Typography>
                 ))}
-              </Stack>
+              </DetailField>
             ) : null}
-            <Typography fontWeight={800} fontSize={13}>
-              Orders
-            </Typography>
-            {selected.orders.map((order) => (
-              <OrderLine key={order.id} order={order} />
-            ))}
+            <DetailField label="Orders">
+              {selected.orders.map((order) => (
+                <OrderLine key={order.id} order={order} />
+              ))}
+            </DetailField>
           </Stack>
         ) : null}
       </AppDrawer>
@@ -136,11 +174,11 @@ function OrderLine({ order }: { order: Order }) {
   return (
     <Stack gap={0.35} sx={{ py: 1, borderBottom: 1, borderColor: 'divider' }}>
       <Stack direction="row" justifyContent="space-between" gap={1}>
-        <Typography fontWeight={700}>{order.orderNumber}</Typography>
+        <Typography fontWeight={800}>{order.orderNumber}</Typography>
         <Typography fontWeight={800}>{formatCurrency(order.total)}</Typography>
       </Stack>
       <StatusChip status={order.status} />
-      <Typography variant="caption" color="text.secondary">
+      <Typography variant="body2" color="text.secondary">
         {order.items.map((i) => i.productName).join(', ')} · {formatDateTime(order.createdAt)}
       </Typography>
     </Stack>

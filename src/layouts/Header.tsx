@@ -22,6 +22,7 @@ import {
 import { alpha } from '@mui/material/styles';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import goldFoil from '@/assets/gold-foil.png';
 import { useAuthStore } from '@/store/authStore';
 import { APP_CONFIG } from '@/config/app.config';
 import { ROLE_LABELS } from '@/constants/roles';
@@ -61,12 +62,16 @@ export function Header({ onMenu }: HeaderProps) {
       position="sticky"
       elevation={0}
       sx={{
-        bgcolor: '#FFFFFF',
-        color: 'text.primary',
-        borderBottom: '1px solid',
-        borderColor: 'divider',
+        bgcolor: brand.gold,
+        backgroundImage: `url(${goldFoil})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        color: brand.wine,
+        borderBottom: `1px solid ${alpha(brand.wine, 0.18)}`,
         ml: { lg: `${SIDEBAR_WIDTH}px` },
         width: { lg: `calc(100% - ${SIDEBAR_WIDTH}px)` },
+        '& .MuiIconButton-root': { color: brand.wine },
       }}
     >
       <Toolbar sx={{ gap: 1.5, minHeight: { xs: 64, md: 72 }, width: '100%' }}>
@@ -74,7 +79,10 @@ export function Header({ onMenu }: HeaderProps) {
           <MenuRoundedIcon />
         </IconButton>
         <Box sx={{ display: { xs: 'none', md: 'block' }, minWidth: 160, flexShrink: 0 }}>
-          <Typography variant="subtitle2" color="text.secondary">
+          <Typography
+            variant="subtitle2"
+            sx={{ color: brand.wine, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', fontSize: 11 }}
+          >
             Production house
           </Typography>
           <Typography
@@ -86,9 +94,9 @@ export function Header({ onMenu }: HeaderProps) {
               px: 1,
               py: 0.15,
               borderRadius: 0.8,
-              bgcolor: alpha(brand.gold, 0.22),
+              bgcolor: brand.creamPaper,
               color: brand.wine,
-              border: `1px solid ${alpha(brand.gold, 0.45)}`,
+              border: `1px solid ${alpha(brand.wine, 0.18)}`,
             }}
           >
             {APP_CONFIG.city}
@@ -99,7 +107,16 @@ export function Header({ onMenu }: HeaderProps) {
           options={options}
           getOptionLabel={(o) => o.label}
           onChange={(_e, value) => value && navigate(value.path)}
-          sx={{ flex: 1, minWidth: 0, maxWidth: 420, display: { xs: 'none', sm: 'block' } }}
+          sx={{
+            flex: '0 1 420px',
+            minWidth: 0,
+            maxWidth: 420,
+            display: { xs: 'none', sm: 'block' },
+            '& .MuiOutlinedInput-root': {
+              bgcolor: brand.creamPaper,
+              borderRadius: 999,
+            },
+          }}
           renderInput={(params) => (
             <TextField
               {...params}
@@ -119,6 +136,45 @@ export function Header({ onMenu }: HeaderProps) {
             />
           )}
         />
+        <Box
+          aria-hidden
+          sx={{
+            flex: 1,
+            minWidth: 0,
+            display: { xs: 'none', md: 'flex' },
+            alignItems: 'center',
+            justifyContent: 'center',
+            px: 1,
+          }}
+        >
+          <Box
+            component="span"
+            sx={{
+              display: 'inline-block',
+              fontFamily: '"Fraunces Variable", "Fraunces", serif',
+              fontWeight: 700,
+              fontSize: { md: 32, lg: 38 },
+              letterSpacing: '0.2em',
+              lineHeight: 1,
+              whiteSpace: 'nowrap',
+              backgroundImage:
+                'linear-gradient(110deg, #6e7378 0%, #cfd4d8 16%, #ffffff 32%, #a8aeb4 48%, #f7f8fa 62%, #8d9399 78%, #e6e8ea 100%)',
+              backgroundSize: '220% 100%',
+              WebkitBackgroundClip: 'text',
+              backgroundClip: 'text',
+              color: 'transparent',
+              WebkitTextFillColor: 'transparent',
+              filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.55)) drop-shadow(0 0 10px rgba(255,255,255,0.35))',
+              animation: 'silverShine 3.2s linear infinite',
+              '@keyframes silverShine': {
+                '0%': { backgroundPosition: '0% 50%' },
+                '100%': { backgroundPosition: '220% 50%' },
+              },
+            }}
+          >
+            GUNUCO
+          </Box>
+        </Box>
         <Stack
           direction="row"
           alignItems="center"
@@ -127,8 +183,13 @@ export function Header({ onMenu }: HeaderProps) {
         >
           <Typography
             variant="caption"
-            color="text.secondary"
-            sx={{ display: { xs: 'none', sm: 'block' }, fontWeight: 700, minWidth: 52, textAlign: 'right' }}
+            sx={{
+              display: { xs: 'none', sm: 'block' },
+              fontWeight: 800,
+              minWidth: 52,
+              textAlign: 'right',
+              color: brand.wine,
+            }}
           >
             {clock.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
           </Typography>
@@ -163,29 +224,17 @@ export function Header({ onMenu }: HeaderProps) {
               px: 1,
               py: 0.5,
               borderRadius: 999,
-              '&:hover': { bgcolor: 'rgba(28,25,23,0.04)' },
+              '&:hover': { bgcolor: alpha(brand.wine, 0.08) },
             }}
           >
-            <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: 12, color: brand.goldLight }}>
+            <Avatar sx={{ width: 32, height: 32, bgcolor: brand.wine, fontSize: 12, color: brand.cream, fontWeight: 800 }}>
               {user?.avatarInitials}
             </Avatar>
             <Box sx={{ display: { xs: 'none', sm: 'block' }, lineHeight: 1.15 }}>
-              <Typography
-                fontSize={13}
-                fontWeight={user?.role === 'owner' ? 800 : 700}
-                noWrap
-                sx={{ color: user?.role === 'owner' ? brand.goldDark : 'inherit' }}
-              >
+              <Typography fontSize={13} fontWeight={800} noWrap sx={{ color: brand.wine }}>
                 {user?.name}
               </Typography>
-              <Typography
-                variant="caption"
-                noWrap
-                sx={{
-                  color: user?.role === 'owner' ? brand.gold : 'text.secondary',
-                  fontWeight: user?.role === 'owner' ? 800 : 400,
-                }}
-              >
+              <Typography variant="caption" noWrap sx={{ color: brand.wineDark, fontWeight: 700 }}>
                 {user ? ROLE_LABELS[user.role] : ''}
               </Typography>
             </Box>

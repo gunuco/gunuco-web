@@ -65,10 +65,13 @@ export function DataTable<T>({
 }: DataTableProps<T>) {
   const skeletonRows = typeof loading === 'number' ? loading : 5;
   const isLoading = Boolean(loading);
-  const colGap = 1.25;
+  const colGap = 1.5;
+  const edgePad = 2.5;
   const displayColumns = columns;
   const hasExplicitWidth = displayColumns.some((col) => col.width != null);
-  const equalWidth = hasExplicitWidth ? undefined : `${100 / Math.max(displayColumns.length, 1)}%`;
+  const equalWidth = `${100 / Math.max(displayColumns.length, 1)}%`;
+  const useEqualColumns = headerFit || !hasExplicitWidth;
+  const colWidth = (col: Column<T>) => (useEqualColumns ? equalWidth : col.width ?? equalWidth);
   const colMinWidth = (col: Column<T>) =>
     col.minWidth ?? (typeof col.width === 'number' ? col.width : undefined);
 
@@ -107,6 +110,12 @@ export function DataTable<T>({
               boxSizing: 'border-box',
               px: headerFit ? colGap : 1.5,
             },
+            '& th:first-of-type, & td:first-of-type': {
+              pl: edgePad,
+            },
+            '& th:last-of-type, & td:last-of-type': {
+              pr: edgePad,
+            },
           }}
         >
           <TableHead>
@@ -120,7 +129,7 @@ export function DataTable<T>({
                     color: brand.cream,
                     bgcolor: headerColor ?? brand.wine,
                     borderBottom: `2px solid ${brand.gold}`,
-                    width: col.width ?? equalWidth,
+                    width: colWidth(col),
                     minWidth: colMinWidth(col),
                     py: 1.35,
                     fontSize: 15,
@@ -143,7 +152,7 @@ export function DataTable<T>({
                       <TableCell
                         key={col.id}
                         align={col.align ?? 'center'}
-                        sx={{ py: 1.5, minWidth: colMinWidth(col), width: col.width ?? equalWidth }}
+                        sx={{ py: 1.5, minWidth: colMinWidth(col), width: colWidth(col) }}
                       >
                         <Skeleton />
                       </TableCell>
@@ -168,7 +177,7 @@ export function DataTable<T>({
                       align={col.align ?? 'center'}
                       sx={{
                         py: 1.5,
-                        width: col.width ?? equalWidth,
+                        width: colWidth(col),
                         minWidth: colMinWidth(col),
                         borderColor: brand.line,
                         whiteSpace: col.noWrap ? 'nowrap' : 'normal',
